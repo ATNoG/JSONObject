@@ -26,6 +26,9 @@ int main()
         std::cout<<obj.get("string")<<std::endl;
         std::cout<<obj.getDouble("number")<<std::endl;
         std::cout<<obj.getInt("integer")<<std::endl;
+
+        JSON obj2 = obj.getJSON("json");
+        std::cout<<obj2.get("string")<<std::endl;
     }
 
     std::cout<<obj<<std::endl;
