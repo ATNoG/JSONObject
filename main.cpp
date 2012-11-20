@@ -63,11 +63,11 @@ int main()
             std::cout<<"Value "<<i<<": "<<std::endl<<vecJSON.at(i)<<std::endl;
         }
 
-        JSONObject obj2 = obj.getJSONObject("json");
-        std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
+        //JSONObject obj2 = obj.getJSONObject("json");
+        //std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
     }
 
-    //std::cout<<obj<<std::endl;
+    std::cout<<obj<<std::endl;
 
     return 0;
 }

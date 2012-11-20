@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/regex.hpp>
 
 class JSONObject
 {   
@@ -16,19 +17,19 @@ class JSONObject
         bool parse(std::stringstream &stream);
         bool parse(std::string &text);
 
-        std::string get(const std::string &key);
-        double getDouble(const std::string &key);
-        int getInt(const std::string &key);
-        bool getBoolean(const std::string &key);
+        std::string get(const std::string &key) const;
+        double getDouble(const std::string &key) const;
+        int getInt(const std::string &key) const;
+        bool getBoolean(const std::string &key) const;
 
-        JSONObject getJSONObject(const std::string &key);
+        JSONObject getJSONObject(const std::string &key) const;
 
-        std::vector<std::string> getArray(const std::string &key);
-        std::vector<double> getArrayDouble(const std::string &key);
-        std::vector<int> getArrayInt(const std::string &key);
-        std::vector<bool> getArrayBoolean(const std::string &key);
+        std::vector<std::string> getArray(const std::string &key) const;
+        std::vector<double> getArrayDouble(const std::string &key) const;
+        std::vector<int> getArrayInt(const std::string &key) const;
+        std::vector<bool> getArrayBoolean(const std::string &key) const;
 
-        std::vector<JSONObject> getArrayJSONObject(const std::string &key);
+        std::vector<JSONObject> getArrayJSONObject(const std::string &key) const;
 
         std::string toString() const;
 
@@ -36,6 +37,7 @@ class JSONObject
     private:
         JSONObject(boost::property_tree::ptree &ptChild);
         boost::property_tree::ptree *pt;
+        boost::regex *exp;
 };
 
 std::ostream& operator<<(std::ostream& out, const JSONObject& json);
