@@ -3,25 +3,26 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 
-
 #include "JSONObject.hpp"
+
+#define EXP "(:|\\[|,)\\s*\"(null|true|false|[0-9]+(.[0-9]+)?)\""
 
 JSONObject::JSONObject()
 {
     pt = new boost::property_tree::ptree();
-    exp = new boost::regex("\"(true|false|[0-9]+(\\.[0-9]+)?)\"");
+    exp = new boost::regex(EXP);
 }
 
 JSONObject::JSONObject(const JSONObject& obj)
 {
     pt = new boost::property_tree::ptree(*(obj.pt));
-    exp = new boost::regex("\"(true|false|[0-9]+(\\.[0-9]+)?)\"");
+    exp = new boost::regex(EXP);
 }
 
 JSONObject::JSONObject(boost::property_tree::ptree &ptChild)
 {
     pt = new boost::property_tree::ptree(ptChild);
-    exp = new boost::regex("\"(true|false|[0-9]+(\\.[0-9]+)?)\"");
+    exp = new boost::regex(EXP);
 }
 
 bool JSONObject::parse(std::stringstream &stream)
@@ -150,8 +151,9 @@ std::vector<JSONObject> JSONObject::getArrayJSONObject(const std::string &key) c
 std::string JSONObject::toString() const
 {
     std::stringstream ss;
-    boost::property_tree::json_parser::write_json(ss, *pt);
-    std::string rv = boost::regex_replace(ss.str(), *exp, "$1");
+    boost::property_tree::json_parser::write_json(ss, *pt, false);
+    std::string rv = boost::regex_replace(ss.str(), *exp, "$1$2");
+    rv.erase(remove_if(rv.begin(), rv.end(), isspace), rv.end());
 
     return rv;
 }
