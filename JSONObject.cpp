@@ -5,7 +5,12 @@
 
 #include "JSONObject.hpp"
 
+#define 
+
 #define EXP "(:|\\[|,)\\s*\"(null|true|false|[0-9]+(.[0-9]+)?)\""
+
+namespace json
+{
 
 JSONObject::JSONObject()
 {
@@ -151,12 +156,35 @@ std::vector<JSONObject> JSONObject::getArrayJSONObject(const std::string &key) c
 std::string JSONObject::toString() const
 {
     std::stringstream ss;
-    boost::property_tree::json_parser::write_json(ss, *pt, false);
+    boost::property_tree::json_parser::write_json(ss, *pt);
     std::string rv = boost::regex_replace(ss.str(), *exp, "$1$2");
     rv.erase(remove_if(rv.begin(), rv.end(), isspace), rv.end());
 
     return rv;
 }
+
+void JSONObject::put(const std::string& key, const std::string& value)
+{
+    pt->put(key, value);
+}
+
+void JSONObject::put(const std::string& key, const double value)
+{
+    pt->put(key, value);
+}
+
+
+void JSONObject::put(const std::string& key, const int value)
+{
+    pt->put(key, value);
+}
+
+
+void JSONObject::put(const std::string& key, const bool value)
+{
+    pt->put(key, value);
+}
+
 
 JSONObject::~JSONObject()
 {
@@ -167,4 +195,5 @@ JSONObject::~JSONObject()
 std::ostream& operator<<(std::ostream& out, const JSONObject& json)
 {   
     return out<<json.toString();
+}
 }

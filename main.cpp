@@ -12,7 +12,7 @@ int main()
     std::string line;
     std::ifstream file;
     std::stringstream ss;
-    JSONObject obj;
+    json::JSONObject obj;
 
     file.open("small.json");
     if (file.is_open())
@@ -56,17 +56,22 @@ int main()
             std::cout<<"Value "<<i<<": "<<vecBool.at(i)<<std::endl;
         }
 
-        std::vector<JSONObject> vecJSON = obj.getArrayJSONObject("arrayJSON");
+        std::vector<json::JSONObject> vecJSON = obj.getArrayJSONObject("arrayJSON");
         std::cout<<"Array: "<<vecJSON.size()<<std::endl;
         for(int i = 0; i < vecJSON.size(); i++)
         {
             std::cout<<"Value "<<i<<": "<<std::endl<<vecJSON.at(i)<<std::endl;
         }
 
-        //JSONObject obj2 = obj.getJSONObject("json");
-        //std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
+        json::JSONObject obj2 = obj.getJSONObject("json");
+        std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
     }
 
+    std::cout<<obj<<std::endl;
+    obj.put("new value0", std::string("JSONObject"));
+    obj.put("new value1", 5.55);
+    obj.put("new value2", 12);
+    obj.put("new value3", true);
     std::cout<<obj<<std::endl;
 
     return 0;

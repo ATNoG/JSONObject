@@ -8,6 +8,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/regex.hpp>
 
+namespace json
+{
 class JSONObject
 {   
     public:
@@ -31,6 +33,11 @@ class JSONObject
 
         std::vector<JSONObject> getArrayJSONObject(const std::string &key) const;
 
+        void put(const std::string& key, const std::string& value);
+        void put(const std::string& key, const double value);
+        void put(const std::string& key, const int value);
+        void put(const std::string& key, const bool value);
+
         std::string toString() const;
 
         ~JSONObject();
@@ -41,5 +48,5 @@ class JSONObject
 };
 
 std::ostream& operator<<(std::ostream& out, const JSONObject& json);
-
+}
 #endif

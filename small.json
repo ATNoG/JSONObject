@@ -2,9 +2,10 @@
 "string":"hello world!!",
 "integer":1556,
 "boolean":"true",
+"json":{"string":"hello"},
 "array":["hello","java","c++","C"],
 "arrayDouble":[1.5, 2.5, 3.1, 4.7],
 "arrayInt":[1, 2, 3, 4],
 "arrayBoolean":[true, false, false, true],
-"arrayJSON":[{"string":"hello"}, {"string":"world"}],
-"json":{"string":"hello"}}
+"arrayJSON":[{"string":"hello"}, {"string":"world"}]
+}
