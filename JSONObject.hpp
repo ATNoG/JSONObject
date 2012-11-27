@@ -17,7 +17,7 @@ class JSONObject
         JSONObject(const JSONObject& obj);
 
         bool parse(std::stringstream &stream);
-        bool parse(std::string &text);
+        bool parse(const std::string &text);
 
         std::string get(const std::string &key) const;
         double getDouble(const std::string &key) const;
@@ -37,6 +37,11 @@ class JSONObject
         void put(const std::string& key, const double value);
         void put(const std::string& key, const int value);
         void put(const std::string& key, const bool value);
+
+        void put(const std::string& key, const std::vector<std::string>& values);
+        void put(const std::string& key, const std::vector<int>& values);
+        void put(const std::string& key, const std::vector<double>& values);
+        void put(const std::string& key, const std::vector<bool>& values);
 
         std::string toString() const;
 

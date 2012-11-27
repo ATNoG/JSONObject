@@ -65,6 +65,11 @@ int main()
 
         json::JSONObject obj2 = obj.getJSONObject("json");
         std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
+
+        obj.put("newArrayString", vec);
+        obj.put("newArrayInt", vecInt);
+        obj.put("newArrayDouble", vecDouble);
+        obj.put("newArrayBool", vecBool);
     }
 
     std::cout<<obj<<std::endl;
