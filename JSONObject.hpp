@@ -23,6 +23,7 @@ class JSONObject
         double getDouble(const std::string &key) const;
         int getInt(const std::string &key) const;
         bool getBoolean(const std::string &key) const;
+        bool isNull(const std::string &key) const;
 
         JSONObject getJSONObject(const std::string &key) const;
 

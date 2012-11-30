@@ -5,7 +5,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 
-#define NUMBER "[0-9]+(.[0-9]+)?"
+#define NUMBER "[0-9]+(\\.[0-9]+)?"
 #define KEYWORDS "null|true|false"
 #define EXP "(:|\\[|,)\\s*\"("KEYWORDS"|"NUMBER")\""
 
@@ -33,7 +33,6 @@ JSONObject::JSONObject(boost::property_tree::ptree &ptChild)
 bool JSONObject::parse(std::stringstream &stream)
 {
     boost::property_tree::read_json(stream, *pt);
-
     return true;
 }
 
@@ -41,14 +40,12 @@ bool JSONObject::parse(const std::string &text)
 {
     std::stringstream ss(text);
     boost::property_tree::read_json(ss, *pt);
-
     return true;
 }
 
 std::string JSONObject::get(const std::string &key) const
 {
-    std::string rv = "null";
-    rv = pt->get<std::string>(key);
+    std::string rv = pt->get<std::string>(key);
     return rv;
 }
 
@@ -70,6 +67,19 @@ bool JSONObject::getBoolean(const std::string &key) const
 {
     bool rv = false;
     rv = pt->get<bool>(key);
+    return rv;
+}
+
+bool JSONObject::isNull(const std::string &key) const
+{
+    bool rv = false;
+    std::string value = pt->get<std::string>(key);
+
+    if(value == "null")
+    {
+        rv = true;
+    }
+
     return rv;
 }
 
@@ -176,58 +186,85 @@ void JSONObject::put(const std::string& key, const bool value)
 
 void JSONObject::put(const std::string& key, const std::vector<std::string>& values)
 {
-    boost::property_tree::ptree arrayChild;
-    boost::property_tree::ptree arrayElement;
-
-    BOOST_FOREACH(const std::string& text, values)
+    if(values.size() == 0)
     {
-        arrayElement.put_value(text);
-        arrayChild.push_back(std::make_pair("",arrayElement));
+        pt->put(key, "null");
     }
+    else
+    {
+        boost::property_tree::ptree arrayChild;
+        boost::property_tree::ptree arrayElement;
 
-    pt->put_child(key, arrayChild);
+        BOOST_FOREACH(const std::string& text, values)
+        {
+            arrayElement.put_value(text);
+            arrayChild.push_back(std::make_pair("",arrayElement));
+        }
+        pt->put_child(key, arrayChild);
+    }
 }
 
 void JSONObject::put(const std::string& key, const std::vector<int>& values)
 {
-    boost::property_tree::ptree arrayChild;
-    boost::property_tree::ptree arrayElement;
-
-    BOOST_FOREACH(int number, values)
+     if(values.size() == 0)
     {
-        arrayElement.put_value(number);
-        arrayChild.push_back(std::make_pair("",arrayElement));
+        pt->put(key, "null");
     }
+    else
+    {
+        boost::property_tree::ptree arrayChild;
+        boost::property_tree::ptree arrayElement;
 
-    pt->put_child(key, arrayChild);
+        BOOST_FOREACH(int number, values)
+        {
+            arrayElement.put_value(number);
+            arrayChild.push_back(std::make_pair("",arrayElement));
+        }
+
+        pt->put_child(key, arrayChild);
+    }
 }
 
 void JSONObject::put(const std::string& key, const std::vector<double>& values)
 {
-    boost::property_tree::ptree arrayChild;
-    boost::property_tree::ptree arrayElement;
-
-    BOOST_FOREACH(double number, values)
+    if(values.size() == 0)
     {
-        arrayElement.put_value(number);
-        arrayChild.push_back(std::make_pair("",arrayElement));
+        pt->put(key, "null");
     }
+    else
+    {
+        boost::property_tree::ptree arrayChild;
+        boost::property_tree::ptree arrayElement;
 
-    pt->put_child(key, arrayChild);
+        BOOST_FOREACH(double number, values)
+        {
+            arrayElement.put_value(number);
+            arrayChild.push_back(std::make_pair("",arrayElement));
+        }
+
+        pt->put_child(key, arrayChild);
+    }
 }
 
 void JSONObject::put(const std::string& key, const std::vector<bool>& values)
 {
-    boost::property_tree::ptree arrayChild;
-    boost::property_tree::ptree arrayElement;
-
-    BOOST_FOREACH(bool value, values)
+    if(values.size() == 0)
     {
-        arrayElement.put_value(value);
-        arrayChild.push_back(std::make_pair("",arrayElement));
+        pt->put(key, "null");
     }
+    else
+    {
+        boost::property_tree::ptree arrayChild;
+        boost::property_tree::ptree arrayElement;
 
-    pt->put_child(key, arrayChild);
+        BOOST_FOREACH(bool value, values)
+        {
+            arrayElement.put_value(value);
+            arrayChild.push_back(std::make_pair("",arrayElement));
+        }
+
+        pt->put_child(key, arrayChild);
+    }
 }
 
 std::string JSONObject::toString() const
