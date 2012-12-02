@@ -184,11 +184,21 @@ void JSONObject::put(const std::string& key, const bool value)
     pt->put(key, value);
 }
 
+void JSONObject::putNull(const std::string& key)
+{
+    pt->put(key, "null");
+}
+
+void JSONObject::put(const std::string& key, const JSONObject& value)
+{
+    pt->put_child(key, *value.pt);
+}
+
 void JSONObject::put(const std::string& key, const std::vector<std::string>& values)
 {
     if(values.size() == 0)
     {
-        pt->put(key, "null");
+        this->putNull(key);
     }
     else
     {
@@ -206,9 +216,9 @@ void JSONObject::put(const std::string& key, const std::vector<std::string>& val
 
 void JSONObject::put(const std::string& key, const std::vector<int>& values)
 {
-     if(values.size() == 0)
+    if(values.size() == 0)
     {
-        pt->put(key, "null");
+        this->putNull(key);
     }
     else
     {
@@ -229,7 +239,7 @@ void JSONObject::put(const std::string& key, const std::vector<double>& values)
 {
     if(values.size() == 0)
     {
-        pt->put(key, "null");
+        this->putNull(key);
     }
     else
     {
@@ -250,7 +260,7 @@ void JSONObject::put(const std::string& key, const std::vector<bool>& values)
 {
     if(values.size() == 0)
     {
-        pt->put(key, "null");
+        this->putNull(key);
     }
     else
     {
@@ -258,6 +268,27 @@ void JSONObject::put(const std::string& key, const std::vector<bool>& values)
         boost::property_tree::ptree arrayElement;
 
         BOOST_FOREACH(bool value, values)
+        {
+            arrayElement.put_value(value);
+            arrayChild.push_back(std::make_pair("",arrayElement));
+        }
+
+        pt->put_child(key, arrayChild);
+    }
+}
+
+void JSONObject::put(const std::string& key, const std::vector<JSONObject>& values)
+{
+    if(values.size() == 0)
+    {
+        this->putNull(key);
+    }
+    else
+    {
+        boost::property_tree::ptree arrayChild;
+        boost::property_tree::ptree arrayElement;
+
+        BOOST_FOREACH(JSONObject value, values)
         {
             arrayElement.put_value(value);
             arrayChild.push_back(std::make_pair("",arrayElement));

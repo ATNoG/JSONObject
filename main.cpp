@@ -64,7 +64,11 @@ int main()
         }
 
         json::JSONObject obj2 = obj.getJSONObject("json");
+        obj2.put("number", 5.23);
+        obj2.putNull("null value");
         std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
+
+        obj.put("new json object", obj2);
 
         obj.put("newArrayString", vec);
         obj.put("newArrayInt", vecInt);

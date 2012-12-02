@@ -38,11 +38,16 @@ class JSONObject
         void put(const std::string& key, const double value);
         void put(const std::string& key, const int value);
         void put(const std::string& key, const bool value);
+        void putNull(const std::string& key);
+
+        void put(const std::string& key, const JSONObject& value);
 
         void put(const std::string& key, const std::vector<std::string>& values);
         void put(const std::string& key, const std::vector<int>& values);
         void put(const std::string& key, const std::vector<double>& values);
         void put(const std::string& key, const std::vector<bool>& values);
+
+        void put(const std::string& key, const std::vector<JSONObject>& values);
 
         std::string toString() const;
 
