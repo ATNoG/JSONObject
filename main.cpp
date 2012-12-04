@@ -64,9 +64,18 @@ int main()
         }
 
         json::JSONObject obj2 = obj.getJSONObject("json");
+        json::JSONObject obj3 = obj.getJSONObject("json");
         obj2.put("number", 5.23);
         obj2.putNull("null value");
         std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
+
+
+        std::vector<json::JSONObject> vecJSON2;
+        vecJSON2.push_back(obj2);
+        vecJSON2.push_back(obj3);
+        vecJSON2.push_back(obj);
+
+        obj.put("array JSON", vecJSON2);
 
         obj.put("new json object", obj2);
 
