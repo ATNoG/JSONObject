@@ -93,9 +93,12 @@ namespace json
     {
         std::vector<std::string> rv;
 
-        BOOST_FOREACH(boost::property_tree::ptree::value_type &values, pt->get_child(key))
+        if(!this->isNull(key))
         {
-            rv.push_back(values.second.data());
+            BOOST_FOREACH(boost::property_tree::ptree::value_type &values, pt->get_child(key))
+            {
+                rv.push_back(values.second.data());
+            }
         }
 
         return rv;
@@ -107,11 +110,14 @@ namespace json
         std::vector<double> rv;
         double number = 0.0;
 
-        BOOST_FOREACH(std::string& text, values)
+        if(!this->isNull(key))
         {
-            std::istringstream istream(text);
-            istream >> number;
-            rv.push_back(number);
+            BOOST_FOREACH(std::string& text, values)
+            {
+                std::istringstream istream(text);
+                istream >> number;
+                rv.push_back(number);
+            }
         }
 
         return rv;
@@ -123,11 +129,14 @@ namespace json
         std::vector<int> rv;
         int number = 0.0;
 
-        BOOST_FOREACH(std::string& text, values)
+        if(!this->isNull(key))
         {
-            std::istringstream istream(text);
-            istream >> number;
-            rv.push_back(number);
+            BOOST_FOREACH(std::string& text, values)
+            {
+                std::istringstream istream(text);
+                istream >> number;
+                rv.push_back(number);
+            }
         }
 
         return rv;
@@ -153,10 +162,13 @@ namespace json
     {
         std::vector<JSONObject> rv;
  
-        BOOST_FOREACH(boost::property_tree::ptree::value_type &values, pt->get_child(key))
+        if(!this->isNull(key))
         {
-            JSONObject obj(values.second);
-            rv.push_back(obj);
+            BOOST_FOREACH(boost::property_tree::ptree::value_type &values, pt->get_child(key))
+            {
+                JSONObject obj(values.second);
+                rv.push_back(obj);
+            }
         }
 
         return rv;
