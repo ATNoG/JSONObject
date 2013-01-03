@@ -5,7 +5,7 @@ OBJS    := ${SRCS:.cpp=.o}
 CFLAGS= -O0 -g -pipe -ansi -pedantic
 CXXFLAGS=${CFLAGS}
 LDFLAGS=
-LIBS=-lboost_regex
+LIBS=-lboost_regex -lboost_thread
 CC=g++
 
 .PHONY: all clean distclean 

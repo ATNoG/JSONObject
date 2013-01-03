@@ -8,6 +8,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/regex.hpp>
 
+#define BOOST_SPIRIT_THREADSAFE
+
 namespace json
 {
     class JSONObject
@@ -56,6 +58,7 @@ namespace json
             ~JSONObject();
         private:
             JSONObject(boost::property_tree::ptree &ptChild);
+
             boost::property_tree::ptree *pt;
             boost::regex *exp;
     };

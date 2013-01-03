@@ -37,7 +37,7 @@ namespace json
 
     bool JSONObject::parse(const std::string &text)
     {
-        std::stringstream ss(text);
+        std::istringstream ss(text);
         boost::property_tree::read_json(ss, *pt);
         return true;
     }
