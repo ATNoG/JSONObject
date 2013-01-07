@@ -23,23 +23,25 @@ namespace json
         exp = new boost::regex(EXP);
     }
 
+    JSONObject::JSONObject(std::istream &stream)
+    {
+        pt = new boost::property_tree::ptree();
+        exp = new boost::regex(EXP);
+        boost::property_tree::read_json(stream, *pt);
+    }
+
+    JSONObject::JSONObject(const std::string &text)
+    {
+        pt = new boost::property_tree::ptree();
+        exp = new boost::regex(EXP);
+        std::istringstream ss(text);
+        boost::property_tree::read_json(ss, *pt);
+    }
+
     JSONObject::JSONObject(boost::property_tree::ptree &ptChild)
     {
         pt = new boost::property_tree::ptree(ptChild);
         exp = new boost::regex(EXP);
-    }
-
-    bool JSONObject::parse(std::stringstream &stream)
-    {
-        boost::property_tree::read_json(stream, *pt);
-        return true;
-    }
-
-    bool JSONObject::parse(const std::string &text)
-    {
-        std::istringstream ss(text);
-        boost::property_tree::read_json(ss, *pt);
-        return true;
     }
 
     std::string JSONObject::get(const std::string &key) const
