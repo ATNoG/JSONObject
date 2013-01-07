@@ -4,7 +4,7 @@ project(JSONObject)
 find_package(Boost REQUIRED COMPONENTS regex thread)
 find_package(Doxygen)
 
-set(CMAKE_CXX_FLAGS "-O2 -Wall -pipe -ansi -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -ansi -pedantic")
 include_directories(${Boost_INCLUDE_DIR})
 
 add_executable(main main.cpp JSONObject.cpp)
