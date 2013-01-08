@@ -181,6 +181,12 @@ namespace json
         pt->put(key, value);
     }
 
+    void JSONObject::put(const std::string& key, const char* value)
+    {
+        std::string text(value);
+        pt->put(key, text);
+    }
+
     void JSONObject::put(const std::string& key, const double value)
     {
         pt->put(key, value);

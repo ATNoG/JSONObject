@@ -129,6 +129,12 @@ namespace json
              */
             void put(const std::string& key, const std::string& value);
             /**
+             * Insert a C style string value with the specified key.
+             * @param key name of the value.
+             * @param value the value associated with the key.
+             */
+            void put(const std::string& key, const char* value);
+            /**
              * Insert a double value with the specified key.
              * @param key name of the value.
              * @param value the value associated with the key.

@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    std::cout<<"JSON wrapper for Boost V1.0"<<std::endl;
+    std::cout<<"JSON wrapper for Boost V1.0.1"<<std::endl;
 
     std::string *path;
     std::ifstream file;
@@ -32,6 +32,10 @@ int main(int argc, char *argv[])
         json::JSONObject obj(ss);
         file.close();
 
+        //std::cout<<obj<<std::endl<<std::endl;
+        std::cout<<obj.get("string")<<std::endl;
+        std::cout<<"Change string..."<<std::endl;
+        obj.put("string", "new string");
         std::cout<<obj.get("string")<<std::endl;
         std::cout<<obj.getDouble("number")<<std::endl;
         std::cout<<obj.getInt("integer")<<std::endl;
