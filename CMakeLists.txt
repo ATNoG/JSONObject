@@ -6,7 +6,7 @@ find_package(Doxygen)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -ansi -pedantic")
 if(NOT LIB_INSTALL_DIR)
-    set(LIB_INSTALL_DIR "lib")
+    set(LIB_INSTALL_DIR "/lib/")
 endif(NOT LIB_INSTALL_DIR)
 include_directories(${Boost_INCLUDE_DIR})
 
@@ -25,6 +25,6 @@ if(DOXYGEN_FOUND)
 endif(DOXYGEN_FOUND)
 
 if(UNIX)
-    install(TARGETS jsonobject LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
+    install(TARGETS jsonobject DESTINATION "${LIB_INSTALL_DIR}")
     install(FILES JSONObject.hpp DESTINATION "include")
 endif(UNIX)
