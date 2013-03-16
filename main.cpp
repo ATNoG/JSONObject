@@ -9,21 +9,16 @@ int main(int argc, char *argv[])
 {
     std::cout<<"JSON wrapper for Boost V1.0.1"<<std::endl;
 
-    std::string *path;
+    std::string path = "small.json";
     std::ifstream file;
     std::stringstream ss;
 
     if(argc > 1)
     {
-        path = new std::string(argv[1]);
-    }
-    else
-    {
-        path = new std::string("small.json");
+        path = std::string(argv[1]);
     }
 
-    file.open(path->c_str());
-    delete path;
+    file.open(path.c_str());
     if (file.is_open())
     {
         std::cout<<"File opened"<<std::endl;
@@ -32,7 +27,7 @@ int main(int argc, char *argv[])
         json::JSONObject obj(ss);
         file.close();
 
-        //std::cout<<obj<<std::endl<<std::endl;
+        std::cout<<obj<<std::endl<<std::endl;
         std::cout<<obj.get("string")<<std::endl;
         std::cout<<"Change string..."<<std::endl;
         obj.put("string", "new string");
@@ -81,7 +76,6 @@ int main(int argc, char *argv[])
         obj2.put("number", 5.23);
         obj2.putNull("null value");
         std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
-
 
         std::vector<json::JSONObject> vecJSON2;
         vecJSON2.push_back(obj2);

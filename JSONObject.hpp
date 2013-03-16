@@ -215,18 +215,18 @@ namespace json
              * Constructs a JSON object based on a existing Boost property tree. 
              * @param ptChild an Boost Property Tree.
              */ 
-            JSONObject(boost::property_tree::ptree &ptChild);
+            JSONObject(const boost::property_tree::ptree& ptChild);
 
             /**
              * Boost property tree used to store the JSON object.
              * The property tree is the backend of the JSON object.
              */
-            boost::property_tree::ptree *pt;
+            boost::property_tree::ptree pt;
             /**
              * Boost Regular expression, used to fix a limitation of boost property tree write_json() function.
              * The regular expression represents numbers and keywords (null, true and false) and correct their value in the JSON toString() funtion.
              */
-            boost::regex *exp;
+            boost::regex exp;
     };
 
     /**
