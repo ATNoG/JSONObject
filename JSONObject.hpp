@@ -2,7 +2,7 @@
  * @file    JSONObject.hpp
  * @class   JSONObject
  * @author  Mario Antunes (mariolpantunes@gmail.com)
- * @version 1.0
+ * @version 2.0
  * @date    January, 2013
  *
  * JSONObject is a easy to use JSON wrapper for boost property tree.
@@ -15,227 +15,100 @@
 #include <string>
 #include <sstream>
 #include <vector>
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/regex.hpp>
-
-#define BOOST_SPIRIT_THREADSAFE
+#include <map>
 
 namespace json
 {
-    /**
-     * @class JSONObject
-     * JSONObject is a easy to use JSON wrapper for boost property tree.
-     * Based on the API of Java org.JSON library (http://www.json.org/java/index.html).
-     */
-    class JSONObject
-    {   
+    enum JSON_TYPE {NUMBER, STRING, OBJECT, BOOLEAN, ARRAY, JNULL};
+    
+    class JSONValue
+    {
         public:
-            /**
-             * Default constructor.
-             */
-            JSONObject();
-            /**
-             * Construct an JSON object from a input stream.
-             * @param stream input stream from a file or string.
-             */
-            JSONObject(std::istream &stream);
-            /**
-             * Construct an JSON object from a string.
-             * @param text input string that represents a JSON object. 
-             */
-            JSONObject(const std::string &text);
-            /**
-             * Copy constructor.
-             * @param obj another JSONObject object.
-             */
-            JSONObject(const JSONObject& obj);
-
-            /**
-             * Retrieve the string value from the JSON object associated with the key.
-             * @param key name of the value.
-             * @return the string associated with the key.
-             */
-            std::string get(const std::string &key) const;
-            /**
-             * Retrieve the double value from the JSON object associated with the key.
-             * @param key name of the value.
-             * @return the double associated with the key.
-             */
-            double getDouble(const std::string &key) const;
-            /**
-             * Retrieve the int value from the JSON object associated with the key.
-             * @param key name of the value.
-             * @return the int associated with the key.
-             */
-            int getInt(const std::string &key) const;
-            /**
-             * Retrieve the boolean value from the JSON object associated with the key.
-             * @param key name of the value.
-             * @return the boolean associated with the key.
-             */
-            bool getBoolean(const std::string &key) const;
-            /**
-             * Verifies if the value associated with the key is NULL or not.
-             * @param key name of the value.
-             * @return true if the value is NULL; false otherwise.
-             */
-            bool isNull(const std::string &key) const;
-            /**
-             * Retrieve the JSON object associated with the key.
-             * @param key name of the value.
-             * @return the JSON object associated with the key.
-             */
-            JSONObject getJSONObject(const std::string &key) const;
-            /**
-             * Retrieve the vector of strings associated with the key.
-             * If the value associated with the key is NULL the functions returns a empty vector.
-             * @param key name of the value.
-             * @return the vector of strings associated with the key.
-             */
-            std::vector<std::string> getArray(const std::string &key) const;
-            /**
-             * Retrieve the vector of doubles associated with the key.
-             * If the value associated with the key is NULL the functions returns a empty vector.
-             * @param key name of the value.
-             * @return the vector of doubles associated with the key.
-             */
-            std::vector<double> getArrayDouble(const std::string &key) const;
-            /**
-             * Retrieve the vector of ints associated with the key.
-             * If the value associated with the key is NULL the functions returns a empty vector.
-             * @param key name of the value.
-             * @return the vector of ints associated with the key.
-             */
-            std::vector<int> getArrayInt(const std::string &key) const;
-            /**
-             * Retrieve the vector of booleans associated with the key.
-             * If the value associated with the key is NULL the functions returns a empty vector.
-             * @param key name of the value.
-             * @return the vector of booleans associated with the key.
-             */
-            std::vector<bool> getArrayBoolean(const std::string &key) const;
-            /**
-             * Retrieve the vector of JSON objects associated with the key.
-             * If the value associated with the key is NULL the functions returns a empty vector.
-             * @param key name of the value.
-             * @return the vector of JSON objects associated with the key.
-             */
-            std::vector<JSONObject> getArrayJSONObject(const std::string &key) const;
-            /**
-             * Insert a string value with the specified key.
-             * @param key name of the value.
-             * @param value the value associated with the key.
-             */
-            void put(const std::string& key, const std::string& value);
-            /**
-             * Insert a C style string value with the specified key.
-             * @param key name of the value.
-             * @param value the value associated with the key.
-             */
-            void put(const std::string& key, const char* value);
-            /**
-             * Insert a double value with the specified key.
-             * @param key name of the value.
-             * @param value the value associated with the key.
-             */
-            void put(const std::string& key, const double value);
-            /**
-             * Insert a int value with the specified key.
-             * @param key name of the value.
-             * @param value the value associated with the key.
-             */
-            void put(const std::string& key, const int value);
-            /**
-             * Insert a boolean value with the specified key.
-             * @param key name of the value.
-             * @param value the value associated with the key.
-             */
-            void put(const std::string& key, const bool value);
-            /**
-             * Insert a NULL value with the specified key.
-             * @param key name of the value.
-             */
-            void putNull(const std::string& key);
-            /**
-             * Insert a JSON object with the specified key.
-             * @param key name of the value.
-             * @param value the value associated with the key.
-             */
-            void put(const std::string& key, const JSONObject& value);
-            /**
-             * Insert a vector of string values with the specified key.
-             * @param key name of the value.
-             * @param values the values associated with the key.
-             */
-            void put(const std::string& key, const std::vector<std::string>& values);
-            /**
-             * Insert a vector of double values with the specified key.
-             * @param key name of the value.
-             * @param values the values associated with the key.
-             */     
-            void put(const std::string& key, const std::vector<double>& values);
-            /**
-             * Insert a vector of int values with the specified key.
-             * @param key name of the value.
-             * @param values the values associated with the key.
-             */
-            void put(const std::string& key, const std::vector<int>& values);
-            /**
-             * Insert a vector of boolean values with the specified key.
-             * @param key name of the value.
-             * @param values the values associated with the key.
-             */
-            void put(const std::string& key, const std::vector<bool>& values);
-            /**
-             * Insert a vector of JSON objects with the specified key.
-             * @param key name of the value.
-             * @param values the values associated with the key.
-             */
-            void put(const std::string& key, const std::vector<JSONObject>& values);
-            /**
-             * Writes the JSON object into a string.
-             * @return a string that represents the JSON object.
-             */ 
-            std::string toString() const;
-            /**
-             * Overload attribution operator.
-             * The overload manages the deletion, creation and copy of Boost Property Tree. 
-             * @param obj another JSON object.
-             */ 
-            JSONObject& operator=(const JSONObject& obj);
-
-            /**
-             * Default destructor.
-             */
-            ~JSONObject();
+            JSONValue(JSON_TYPE type);
+            virtual void toString(std::string& toString)=0;
+            virtual JSONValue* clone()=0;
+            virtual ~JSONValue();
+        protected:
+            JSON_TYPE vtype;
+    };
+    
+    class JSONValueNumber: public JSONValue
+    {
+        public:
+            JSONValueNumber(double value);
+            void toString(std::string& toString);
+            JSONValue* clone();
+            ~JSONValueNumber();
         private:
-            /**
-             * Private constructor.
-             * Constructs a JSON object based on a existing Boost property tree. 
-             * @param ptChild an Boost Property Tree.
-             */ 
-            JSONObject(const boost::property_tree::ptree& ptChild);
-
-            /**
-             * Boost property tree used to store the JSON object.
-             * The property tree is the backend of the JSON object.
-             */
-            boost::property_tree::ptree pt;
-            /**
-             * Boost Regular expression, used to fix a limitation of boost property tree write_json() function.
-             * The regular expression represents numbers and keywords (null, true and false) and correct their value in the JSON toString() funtion.
-             */
-            boost::regex exp;
+            double vvalue; 
+    };
+    
+    class JSONValueString: public JSONValue
+    {
+        public:
+            JSONValueString(const std::string& value);
+            void toString(std::string& toString);
+            JSONValue* clone();
+            ~JSONValueString();
+        private:
+            std::string vvalue; 
     };
 
-    /**
-     * Overload out stream operator.
-     * It prints out the result of the toString() function.
-     * @param out output stream.
-     * @param json another JSON object.
-     */ 
-    std::ostream& operator<<(std::ostream& out, const JSONObject& json);
-}
+    class JSONValueBoolean: public JSONValue
+    {
+        public:
+            JSONValueBoolean(bool value);
+            void toString(std::string& toString);
+            JSONValue* clone();
+            ~JSONValueBoolean();
+        private:
+            bool vvalue;
+    };
 
+    class JSONValueNULL: public JSONValue
+    {
+        public:
+            JSONValueNULL();
+            void toString(std::string& toString);
+            JSONValue* clone();
+            ~JSONValueNULL();
+    };
+    
+    class JSONValueArray: public JSONValue
+    {
+        public:
+            JSONValueArray();
+            JSONValueArray(std::vector<JSONValue*>& array);
+            void put(JSONValue* value);
+            void toString(std::string& toString);
+            JSONValue* clone();
+            ~JSONValueArray();
+        private:
+            std::vector<JSONValue*> varray;
+    };
+    
+    class JSONObject: public JSONValue
+    {   
+        public:
+            JSONObject();
+            JSONObject(const std::string& str);
+            JSONObject(const JSONObject& obj);
+            void put(const std::string& key, double value);
+            void put(const std::string& key, std::string value);
+            void put(const std::string& key, bool value);
+            void put(const std::string& key, JSONValueArray& array);
+            void put(const std::string& key, std::vector<std::string>& array);
+            void put(const std::string& key, JSONValue& obj);
+            void putNull(const std::string& key);
+            void toString(std::string& toString);
+            JSONValue* clone();
+            ~JSONObject();
+        private:
+            std::map<std::string, JSONValue*> map;
+            void put(const std::string& key, JSONValue* obj);
+            void parse(const std::string& str);
+            JSONValue* factory(const std::string& str, size_t begin,
+            size_t end);
+    };
+}
 #endif

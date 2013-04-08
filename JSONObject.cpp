@@ -1,335 +1,531 @@
 #include "JSONObject.hpp"
 
 #include <iostream>
-
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/foreach.hpp>
-
-#define NUMBER "[0-9]+(\\.[0-9]+)?"
-#define KEYWORDS "null|true|false"
-#define EXP "(:|\\[|,)\\s*\"("KEYWORDS"|"NUMBER")\""
+#include <sstream>
+#include <stack>
 
 namespace json
 {
-    JSONObject::JSONObject()
+    enum PARSE_STATE {BEGIN, ROOT, JSON,
+    PRE_KEY, KEY, COLON, COMMA, VALUE,
+    JSTRING, JARRAY, END, ERROR};
+    
+    /**
+     * 
+     */
+    JSONValue::JSONValue(JSON_TYPE type)
     {
-        exp = boost::regex(EXP);
+        vtype = type;
     }
 
-    JSONObject::JSONObject(const JSONObject& obj)
+    JSONValue::~JSONValue()
     {
-        pt = obj.pt;
-        exp = boost::regex(EXP);
     }
 
-    JSONObject::JSONObject(std::istream &stream)
+    /**
+     * 
+     */
+    JSONValueNumber::JSONValueNumber(double value):JSONValue(NUMBER)
     {
-        exp = boost::regex(EXP);
-        boost::property_tree::read_json(stream, pt);
+        vvalue = value;
     }
 
-    JSONObject::JSONObject(const std::string &text)
+    void JSONValueNumber::toString(std::string& toString)
     {
-        exp = boost::regex(EXP);
-        std::istringstream ss(text);
-        boost::property_tree::read_json(ss, pt);
+        std::stringstream ss;
+        ss << vvalue;
+        toString.append(ss.str());
     }
 
-    JSONObject::JSONObject(const boost::property_tree::ptree &ptChild)
+    JSONValue* JSONValueNumber::clone()
     {
-        pt = ptChild;
-        exp = boost::regex(EXP);
+        return new JSONValueNumber(vvalue);
     }
 
-    std::string JSONObject::get(const std::string &key) const
-    { 
-        return pt.get<std::string>(key);
+    JSONValueNumber::~JSONValueNumber()
+    {
     }
 
-    double JSONObject::getDouble(const std::string &key) const
+    /**
+     * 
+     */
+    JSONValueString::JSONValueString(const std::string& value):JSONValue(STRING)
     {
-        return pt.get<double>(key);
+        vvalue = value;
     }
 
-    int JSONObject::getInt(const std::string &key) const
+    void JSONValueString::toString(std::string& toString)
     {
-        return pt.get<int>(key);
+        toString.append("\"");
+        toString.append(vvalue);
+        toString.append("\"");
     }
 
-    bool JSONObject::getBoolean(const std::string &key) const
+    JSONValue* JSONValueString::clone()
     {
-        return pt.get<bool>(key);
+        return new JSONValueString(vvalue);
     }
 
-    bool JSONObject::isNull(const std::string &key) const
+    JSONValueString::~JSONValueString()
     {
-        bool rv = false;
-        std::string value = pt.get<std::string>(key);
-        if(value == "null")
+    }
+
+    /**
+     *
+     */
+    JSONValueBoolean::JSONValueBoolean(bool value):JSONValue(BOOLEAN)
+    {
+        vvalue = value;
+    }
+
+    void JSONValueBoolean::toString(std::string& toString)
+    {
+        if(vvalue)
+            toString.append("true");
+        else
+            toString.append("false");
+    }
+
+    JSONValue* JSONValueBoolean::clone()
+    {
+        return new JSONValueBoolean(vvalue);
+    }
+
+    JSONValueBoolean::~JSONValueBoolean()
+    {
+    }
+
+    /**
+     *
+     */
+
+    JSONValueNULL::JSONValueNULL():JSONValue(JNULL)
+    {
+    }
+
+    void JSONValueNULL::toString(std::string& toString)
+    {
+        toString.append("null");
+    }
+
+    JSONValue* JSONValueNULL::clone()
+    {
+        return new JSONValueNULL();
+    }
+
+    JSONValueNULL::~JSONValueNULL()
+    {
+    }
+    
+    /**
+     * 
+     */
+    JSONValueArray::JSONValueArray():JSONValue(ARRAY)
+    {
+    }
+    
+    JSONValueArray::JSONValueArray(std::vector<JSONValue*>& array):JSONValue(ARRAY)
+    {
+        std::vector<JSONValue*>::iterator it = array.begin();
+        for(; it != array.end(); ++it)
         {
-            rv = true;
+            varray.push_back((*it)->clone());
+        }
+    }
+    
+    void JSONValueArray::put(JSONValue* value)
+    {
+        varray.push_back(value);
+    }
+    
+    void JSONValueArray::toString(std::string& toString)
+    {
+        toString.append("[");
+        std::vector<JSONValue*>::iterator it = varray.begin();
+        for(; it != varray.end(); ++it)
+        {
+            (*it)->toString(toString);
+            toString.append(",");
+        }
+        if(toString[toString.size()-1] == ',')
+            toString[toString.size()-1] = ']';
+        else
+            toString.append("]");
+    }
+    JSONValue* JSONValueArray::clone()
+    {
+        JSONValueArray* rv = new JSONValueArray();
+        std::vector<JSONValue*>::iterator it = varray.begin();
+        for(; it != varray.end(); ++it)
+        {
+            rv->varray.push_back((*it)->clone());
         }
         return rv;
     }
-
-    JSONObject JSONObject::getJSONObject(const std::string &key) const
+    JSONValueArray::~JSONValueArray()
     {
-        JSONObject rv;
-
-        if(!this->isNull(key))
+        std::vector<JSONValue*>::iterator it = varray.begin();
+        for(; it != varray.end(); ++it)
         {
-            boost::property_tree::ptree ptChild = pt.get_child(key);
-            rv = JSONObject(ptChild);
+            delete *it;
         }
-        
-        return rv;
+        varray.clear();
+    }
+    
+    /**
+     * 
+     */
+    JSONObject::JSONObject():JSONValue(OBJECT)
+    {
+    }
+    
+    JSONObject::JSONObject(const std::string& str):JSONValue(OBJECT)
+    {
+        parse(str);
     }
 
-    std::vector<std::string> JSONObject::getArray(const std::string &key) const
+    JSONObject::JSONObject(const JSONObject& obj):JSONValue(OBJECT)
     {
-        std::vector<std::string> rv;
-
-        if(!this->isNull(key))
-        {
-            BOOST_FOREACH(const boost::property_tree::ptree::value_type& values, pt.get_child(key))
-            {
-                rv.push_back(values.second.data());
-            }
-        }
-
-        return rv;
+        map = obj.map;
     }
 
-    std::vector<double> JSONObject::getArrayDouble(const std::string &key) const
+    void JSONObject::put(const std::string& key, double value)
     {
-        std::vector<std::string> values = getArray(key);
-        std::vector<double> rv;
-        double number = 0.0;
-
-        if(!this->isNull(key))
-        {
-            BOOST_FOREACH(std::string& text, values)
-            {
-                std::istringstream istream(text);
-                istream >> number;
-                rv.push_back(number);
-            }
-        }
-
-        return rv;
+        map[key] = new JSONValueNumber(value);
     }
 
-    std::vector<int> JSONObject::getArrayInt(const std::string &key) const
+    void JSONObject::put(const std::string& key, std::string value)
     {
-        std::vector<std::string> values = getArray(key);
-        std::vector<int> rv;
-        int number = 0.0;
-
-        if(!this->isNull(key))
-        {
-            BOOST_FOREACH(std::string& text, values)
-            {
-                std::istringstream istream(text);
-                istream >> number;
-                rv.push_back(number);
-            }
-        }
-
-        return rv;
+        map[key] = new JSONValueString(value);
     }
 
-    std::vector<bool> JSONObject::getArrayBoolean(const std::string &key) const
+    void JSONObject::put(const std::string& key, bool value)
     {
-        std::vector<std::string> values = this->getArray(key);
-        std::vector<bool> rv;
-
-        BOOST_FOREACH(std::string& text, values)
-        {
-            if(text=="true")
-                rv.push_back(true);
-            else
-                rv.push_back(false);
-        }
-
-        return rv;
-    }
-
-    std::vector<JSONObject> JSONObject::getArrayJSONObject(const std::string &key) const
-    {
-        std::vector<JSONObject> rv;
- 
-        if(!this->isNull(key))
-        {
-            BOOST_FOREACH(const boost::property_tree::ptree::value_type& values, pt.get_child(key))
-            {
-                JSONObject obj(values.second);
-                rv.push_back(obj);
-            }
-        }
-
-        return rv;
-    }
-
-    void JSONObject::put(const std::string& key, const std::string& value)
-    {
-        pt.put(key, value);
-    }
-
-    void JSONObject::put(const std::string& key, const char* value)
-    {
-        std::string text(value);
-        pt.put(key, text);
-    }
-
-    void JSONObject::put(const std::string& key, const double value)
-    {
-        pt.put(key, value);
-    }
-
-    void JSONObject::put(const std::string& key, const int value)
-    {
-        pt.put(key, value);
-    }
-
-    void JSONObject::put(const std::string& key, const bool value)
-    {
-        pt.put(key, value);
+        map[key] = new JSONValueBoolean(value);
     }
 
     void JSONObject::putNull(const std::string& key)
     {
-        pt.put(key, "null");
+        map[key] = new JSONValueNULL();
     }
 
-    void JSONObject::put(const std::string& key, const JSONObject& value)
+    void JSONObject::put(const std::string& key, JSONValue& obj)
     {
-        pt.put_child(key, value.pt);
+        map[key] = obj.clone();
     }
-
-    void JSONObject::put(const std::string& key, const std::vector<std::string>& values)
+    
+    void JSONObject::put(const std::string& key, JSONValue* obj)
     {
-        if(values.size() == 0)
+        map[key] = obj;
+    }
+    
+    void JSONObject::put(const std::string& key, JSONValueArray& array)
+    {
+        map[key] = array.clone();
+    }
+    
+    void JSONObject::put(const std::string& key, std::vector<std::string>& array)
+    {
+        JSONValueArray* value = new JSONValueArray();
+        std::vector<std::string>::iterator it = array.begin();
+        for(; it != array.end(); ++it)
         {
-            this->putNull(key);
+            value->put(new JSONValueString((*it)));
         }
+        map[key] = value;
+    }
+
+    void JSONObject::toString(std::string& toString)
+    {
+        toString.append("{");
+        std::map<std::string, JSONValue*>::iterator it = map.begin();
+        for(; it != map.end(); ++it)
+        {
+            toString.append("\"");
+            toString.append(it->first);
+            toString.append("\":");
+            it->second->toString(toString);
+            toString.append(",");
+        }
+        if(toString[toString.size()-1] == ',')
+            toString[toString.size()-1] = '}';
         else
-        {
-            boost::property_tree::ptree arrayChild;
-            boost::property_tree::ptree arrayElement;
-
-            BOOST_FOREACH(const std::string& text, values)
-            {
-                arrayElement.put_value(text);
-                arrayChild.push_back(std::make_pair("",arrayElement));
-            }
-            pt.put_child(key, arrayChild);
-        }
+            toString.append("}");
     }
 
-    void JSONObject::put(const std::string& key, const std::vector<int>& values)
+    JSONValue* JSONObject::clone()
     {
-        if(values.size() == 0)
-        {
-            this->putNull(key);
-        }
-        else
-        {
-            boost::property_tree::ptree arrayChild;
-            boost::property_tree::ptree arrayElement;
-
-            BOOST_FOREACH(int number, values)
-            {
-                arrayElement.put_value(number);
-                arrayChild.push_back(std::make_pair("",arrayElement));
-            }
-
-            pt.put_child(key, arrayChild);
-        }
-    }
-
-    void JSONObject::put(const std::string& key, const std::vector<double>& values)
-    {
-        if(values.size() == 0)
-        {
-            this->putNull(key);
-        }
-        else
-        {
-            boost::property_tree::ptree arrayChild;
-            boost::property_tree::ptree arrayElement;
-
-            BOOST_FOREACH(double number, values)
-            {
-                arrayElement.put_value(number);
-                arrayChild.push_back(std::make_pair("",arrayElement));
-            }
-
-            pt.put_child(key, arrayChild);
-        }
-    }
-
-    void JSONObject::put(const std::string& key, const std::vector<bool>& values)
-    {
-        if(values.size() == 0)
-        {
-            this->putNull(key);
-        }
-        else
-        {
-            boost::property_tree::ptree arrayChild;
-            boost::property_tree::ptree arrayElement;
-
-            BOOST_FOREACH(bool value, values)
-            {
-                arrayElement.put_value(value);
-                arrayChild.push_back(std::make_pair("",arrayElement));
-            }
-
-            pt.put_child(key, arrayChild);
-        }
-    }
-
-    void JSONObject::put(const std::string& key, const std::vector<JSONObject>& values)
-    {
-        if(values.size() == 0)
-        {
-            this->putNull(key);
-        }
-        else
-        {
-            boost::property_tree::ptree arrayChild;
-            BOOST_FOREACH(JSONObject value, values)
-            {
-                arrayChild.push_back(std::make_pair("",value.pt));
-            }
-            pt.put_child(key, arrayChild);
-        }
-    }
-
-    JSONObject& JSONObject::operator=(const JSONObject& obj)
-    {
-        if(this != &obj)
-        {
-            pt = obj.pt;
-        }
-
-        return *this;
-    }
-
-    std::string JSONObject::toString() const
-    {
-        std::stringstream ss;
-        boost::property_tree::json_parser::write_json(ss, pt);
-        std::string rv = boost::regex_replace(ss.str(), exp, "$1$2");
+        JSONObject* rv = new JSONObject();
+        std::map<std::string, JSONValue*>::iterator it = map.begin();
+        for(it=map.begin(); it != map.end(); ++it)
+            rv->map[it->first] = it->second->clone();
         return rv;
+    }
+    
+    JSONValue* JSONObject::factory(const std::string& str,
+    size_t begin, size_t end)
+    {
+        JSONValue *rv = NULL;
+        std::string value = str.substr(begin, end-begin+1);
+        std::cout<<"VALUE: "<<value<<std::endl;
+        
+        if(value[0]=='"' && value[value.size()-1]=='"')
+            rv = new JSONValueString(value.substr(1, value.size()-2));
+        else if(value.find("null") != std::string::npos)
+            rv = new JSONValueNULL();
+        else if(value.find("true") != std::string::npos)
+            rv = new JSONValueBoolean(true);
+        else if(value.find("false") != std::string::npos)
+            rv = new JSONValueBoolean(false);
+        else
+        {
+            std::istringstream is(value);
+            double number;
+            if (is >> number)
+                rv = new JSONValueNumber(number);
+        }
+        return rv;
+    }
+    
+    void JSONObject::parse(const std::string& str)
+    {
+        size_t begin = 0, end = 0;
+        std::string key;
+        std::stack<PARSE_STATE> state;
+        std::stack<JSONObject*> objects;
+        std::stack<JSONValueArray*> arrays;
+        state.push(BEGIN);
+        
+        std::cout<<str<<std::endl;        
+        for(size_t idx = 0; idx < str.size(); idx++)
+        {
+            switch(state.top())
+            {
+                case BEGIN:
+                    switch(str[idx])
+                    {
+                        case '{':
+                            state.pop();
+                            state.push(END);
+                            state.push(ROOT);
+                            objects.push(this);
+                            break;
+                    }
+                    break;
+                case ROOT:
+                    switch(str[idx])
+                    {
+                        case '"':
+                            begin = idx+1;
+                            state.push(KEY);
+                            break;
+                        case '}':
+                            objects.pop();
+                            state.pop();
+                            break;
+                    }
+                    break;
+                case JSON:
+                    switch(str[idx])
+                    {
+                        case '"':
+                            begin = idx+1;
+                            state.push(KEY);
+                            break;
+                        case '}':
+                            objects.pop();
+                            state.pop();
+                            state.push(COMMA);
+                            break;
+                    }
+                    break;
+                case PRE_KEY:
+                    switch(str[idx])
+                    {
+                        case '"':
+                            begin = idx+1;
+                            state.pop();
+                            state.push(KEY);
+                            break;
+                    }
+                    break;
+                case KEY:
+                    switch(str[idx])
+                    {
+                        case '"':
+                            end = idx-1;
+                            key = str.substr(begin, end-begin+1);
+                            state.pop();
+                            state.push(COLON);
+                            break;
+                    }
+                    break;
+                case COLON:
+                    switch(str[idx])
+                    {
+                        case ':':
+                            begin = idx+1;
+                            state.pop();
+                            state.push(VALUE);
+                            break;
+                    }
+                    break;
+                case VALUE:
+                    switch(str[idx])
+                    {
+                        case '"':
+                            begin = idx;
+                            state.pop();
+                            state.push(JSTRING);
+                            break;
+                        case ',':
+                            end = idx-1;
+                            objects.top()->put(key, factory(str, begin, end));
+                            state.pop();
+                            break;
+                        case '{':
+                        {
+                            JSONObject* obj = new JSONObject();
+                            objects.top()->put(key, obj);
+                            objects.push(obj);
+                            state.pop();
+                            state.push(JSON);
+                            break;
+                        }
+                        case '}':
+                            end = idx-1;
+                            objects.top()->put(key, factory(str, begin, end));
+                            objects.pop();
+                            state.pop();
+                            state.pop();
+                            if(state.top() == JSON || state.top() == JARRAY)
+                                state.push(COMMA);
+                            else if(state.top() == ROOT)
+                                state.pop();
+                            break;
+                        case '[':
+                        {
+                            begin = idx+1;
+                            JSONValueArray *array = new JSONValueArray();
+                            objects.top()->put(key, array);
+                            arrays.push(array);
+                            state.pop();
+                            state.push(JARRAY);
+                            break;
+                        }
+                    }
+                    break;
+                case JSTRING:
+                    switch(str[idx])
+                    {
+                        case '"':
+                            end = idx;
+                            objects.top()->put(key, factory(str, begin, end));
+                            state.pop();
+                            state.push(COMMA);
+                            break;
+                    }
+                    break;
+                case COMMA:
+                    switch(str[idx])
+                    {
+                        case ',':
+                        {
+                            state.pop();
+                            begin = idx+1;
+                            if(state.top() == ROOT || state.top() == JSON)
+                                state.push(PRE_KEY);
+                            break;
+                        }
+                        case '}':
+                            state.pop();
+                            if(state.top() == JSON)
+                            {
+                                objects.pop();
+                                state.pop();
+                                state.push(COMMA);
+                            }
+                            else if(state.top() == ROOT)
+                            {
+                                objects.pop();
+                                state.pop();
+                            }
+                            break;
+                        case ']':
+                            state.pop();
+                            if(state.top() == JARRAY)
+                            {
+                                arrays.pop();
+                                state.pop();
+                                state.push(COMMA);
+                            }
+                            break;
+                    }
+                    break;
+                case JARRAY:
+                    switch(str[idx])
+                    {
+                        case '"':
+                            begin = idx;
+                            state.push(JSTRING);
+                            break;
+                        case '[':
+                        {
+                            begin = idx+1;
+                            JSONValueArray *array = new JSONValueArray();
+                            arrays.top()->put(array);
+                            arrays.push(array);
+                            state.push(JARRAY);
+                            break;
+                        }
+                        case ']':
+                            end = idx-1;
+                            arrays.top()->put(factory(str, begin, end));
+                            arrays.pop();
+                            state.pop();
+                            state.push(COMMA);
+                            break;
+                        case ',':
+                            end = idx-1;
+                            arrays.top()->put(factory(str, begin, end));
+                            begin = idx+1;
+                            break;
+                        case '{':
+                        {
+                            JSONObject* obj = new JSONObject();
+                            arrays.top()->put(obj);
+                            objects.push(obj);
+                            state.push(JSON);
+                            break;
+                        }
+                    }
+                break;
+            case END:
+                break;
+            case ERROR:
+                break;
+            }
+        }
+        
+        if(state.top() != END)
+        {
+            std::cout<<"ERROR: STOP at state "<<state.top()<<std::endl;
+            /*std::map<std::string, JSONValue*>::iterator it = map.begin();
+            for(it=map.begin(); it != map.end(); ++it)
+            {
+                delete it->second;
+            }
+            map.clear();*/
+        }
     }
 
     JSONObject::~JSONObject()
     {
-    }
-
-    std::ostream& operator<<(std::ostream& out, const JSONObject& json)
-    {   
-        return out<<json.toString();
+        std::map<std::string, JSONValue*>::iterator it = map.begin();
+        for(it=map.begin(); it != map.end(); ++it)
+        {
+            delete it->second;
+        }
+        map.clear();
     }
 }

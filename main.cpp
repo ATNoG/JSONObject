@@ -1,15 +1,71 @@
+#include "JSONObject.hpp"
+
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <ctime>
 
-#include "JSONObject.hpp"
+#define SIZE 1000000
 
 int main(int argc, char *argv[])
 {
-    std::cout<<"JSON wrapper for Boost V1.0.1"<<std::endl;
-
-    std::string path = "small.json";
+    std::vector<std::string> array;
+    for(int i = 0; i < SIZE; i++)
+        array.push_back("<item id='0df3ecaa-3af9-4e38-ba82-37243e92f882'><lofar xmlns='http://lofar/agriculture'><published> Thu Jan 01 01:00:00 WET 1970 </published><fieldSensor><temperature> -14.472147147695637 </temperature><humidity> 59.0 </humidity></fieldSensor><weatherForecast><temperature> 17.07871504916448 </temperature><humidity> 87.0 </humidity><windSpeed> 9.774725608655714 </windSpeed><windDirection> WNW </windDirection><rain> 0.804741766718436 </rain></weatherForecast></lofar></item>");
+    json::JSONObject j;
+    clock_t begin = clock();
+    j.put("strings", array);
+    clock_t end = clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout<<"Time: "<<elapsed_secs<<" seconds."<<std::endl;
+    
+    begin = clock();
+    json::JSONObject obj, obj2;
+    obj2.put("string", "Hello world!!");
+    std::string str;
+    obj2.toString(str);
+    std::cout<<str<<std::endl;
+    
+    obj.put("number", 3.1416);
+    obj.put("boolean", false);
+    obj.put("success", true);
+    std::vector<std::string> v;
+    v.push_back(std::string("hello"));
+    v.push_back(std::string("world"));
+    obj.put("array", v);
+    obj.putNull("NULL");
+    str="";
+    obj.toString(str);
+    std::cout<<str<<std::endl;
+    
+    obj.put("obj", obj2);
+    str="";
+    obj.toString(str);
+    std::cout<<str<<std::endl;
+    end = clock();
+    elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout<<"Time: "<<elapsed_secs<<" seconds."<<std::endl;
+    
+    std::string txt = "{\"json\":\n\
+    banana{\"another json\":\n\
+    {\"yet another json\":\n\
+    {\"key1\":\"hello\",\n\
+    \"key2\":null,\n\
+    \"key3\":false,\n\
+    \"key4\":12.00,\n\
+    \"key5\":\"hello\",\n\
+    \"key6\":\"world\"}}}, \"key\":52, \"stuff\":[[1],2[[5],7],{\"key\":null}]}";
+    begin = clock();
+    json::JSONObject stuff(txt);
+    end = clock();
+    elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout<<"Time: "<<elapsed_secs<<" seconds."<<std::endl;
+    str="";
+    stuff.toString(str);
+    std::cout<<str<<std::endl;
+    
+    std::string path="sample.json";
     std::ifstream file;
     std::stringstream ss;
 
@@ -17,80 +73,27 @@ int main(int argc, char *argv[])
     {
         path = std::string(argv[1]);
     }
-
+    std::cout<<"Open file: ";
     file.open(path.c_str());
     if (file.is_open())
     {
-        std::cout<<"File opened"<<std::endl;
+        std::cout<<"success"<<std::endl;
         ss << file.rdbuf();
+        txt = ss.str();
         
-        json::JSONObject obj(ss);
-        file.close();
-
-        std::cout<<obj<<std::endl<<std::endl;
-        std::cout<<obj.get("string")<<std::endl;
-        std::cout<<"Change string..."<<std::endl;
-        obj.put("string", "new string");
-        std::cout<<obj.get("string")<<std::endl;
-        std::cout<<obj.getDouble("number")<<std::endl;
-        std::cout<<obj.getInt("integer")<<std::endl;
-        std::cout<<obj.getBoolean("boolean")<<std::endl;
-
-        std::vector<std::string> vec = obj.getArray("array");
-        std::cout<<"Array: "<<vec.size()<<std::endl;
-        for(size_t i = 0; i < vec.size(); i++)
-        {
-            std::cout<<"Value "<<i<<": "<<vec.at(i)<<std::endl;
-        }
-
-        std::vector<double> vecDouble = obj.getArrayDouble("arrayDouble");
-        std::cout<<"Array: "<<vecDouble.size()<<std::endl;
-        for(size_t i = 0; i < vecDouble.size(); i++)
-        {
-            std::cout<<"Value "<<i<<": "<<vecDouble.at(i)<<std::endl;
-        }
-
-        std::vector<int> vecInt = obj.getArrayInt("arrayInt");
-        std::cout<<"Array: "<<vecInt.size()<<std::endl;
-        for(size_t i = 0; i < vecInt.size(); i++)
-        {
-            std::cout<<"Value "<<i<<": "<<vecInt.at(i)<<std::endl;
-        }
-
-        std::vector<bool> vecBool = obj.getArrayBoolean("arrayBoolean");
-        std::cout<<"Array: "<<vecBool.size()<<std::endl;
-        for(size_t i = 0; i < vecBool.size(); i++)
-        {
-            std::cout<<"Value "<<i<<": "<<vecBool.at(i)<<std::endl;
-        }
-
-        std::vector<json::JSONObject> vecJSON = obj.getArrayJSONObject("arrayJSON");
-        std::cout<<"Array: "<<vecJSON.size()<<std::endl;
-        for(size_t i = 0; i < vecJSON.size(); i++)
-        {
-            std::cout<<"Value "<<i<<": "<<std::endl<<vecJSON.at(i)<<std::endl;
-        }
-
-        json::JSONObject obj2 = obj.getJSONObject("json");
-        json::JSONObject obj3 = obj.getJSONObject("json");
-        obj2.put("number", 5.23);
-        obj2.putNull("null value");
-        std::cout<<"Internal JSON:"<<std::endl<<obj2<<std::endl;
-
-        std::vector<json::JSONObject> vecJSON2;
-        vecJSON2.push_back(obj2);
-        vecJSON2.push_back(obj3);
-        vecJSON2.push_back(obj);
-
-        obj.put("array JSON", vecJSON2);
-
-        obj.put("new json object", obj2);
-
-        obj.put("newArrayString", vec);
-        obj.put("newArrayInt", vecInt);
-        obj.put("newArrayDouble", vecDouble);
-        obj.put("newArrayBool", vecBool);
+        begin = clock();
+        json::JSONObject stuff(txt);
+        end = clock();
+        elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+        std::cout<<"Time: "<<elapsed_secs<<" seconds."<<std::endl;
+        str="";
+        stuff.toString(str);
+        std::cout<<str<<std::endl;
     }
-
+    else
+    {
+        std::cout<<"fail"<<std::endl;
+    }
+    
     return 0;
 }
