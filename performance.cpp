@@ -2,7 +2,7 @@
 #include <ctime>
 #include "JSONObject.hpp"
 
-#define SIZE 1000000
+#define SIZE 100000
 
 int main(int argc, char *argv[])
 {
