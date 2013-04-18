@@ -48,14 +48,14 @@ int main(int argc, char *argv[])
     std::cout<<"Time: "<<elapsed_secs<<" seconds."<<std::endl;
     
     std::string txt = "{\"json\":\n\
-    banana{\"another json\":\n\
+    {\"another json\":\n\
     {\"yet another json\":\n\
     {\"key1\":\"hello\",\n\
     \"key2\":null,\n\
     \"key3\":false,\n\
     \"key4\":12.00,\n\
     \"key5\":\"hello\",\n\
-    \"key6\":\"world\"}}}, \"key\":52, \"stuff\":[[1],2[[5],7],{\"key\":null}]}";
+    \"key6\":\"world\"}}}, \"key\":52, \"stuff\":[1,2,3]}";
     begin = clock();
     json::JSONObject stuff(txt);
     end = clock();

@@ -266,22 +266,24 @@ namespace json
     size_t begin, size_t end)
     {
         JSONValue *rv = NULL;
-        std::string value = str.substr(begin, end-begin+1);
-        
-        if(value[0]=='"' && value[value.size()-1]=='"')
-            rv = new JSONValueString(value.substr(1, value.size()-2));
-        else if(value.find("null") != std::string::npos)
-            rv = new JSONValueNULL();
-        else if(value.find("true") != std::string::npos)
-            rv = new JSONValueBoolean(true);
-        else if(value.find("false") != std::string::npos)
-            rv = new JSONValueBoolean(false);
-        else
+        if(begin <= end)
         {
-            std::istringstream is(value);
-            double number;
-            if (is >> number)
-                rv = new JSONValueNumber(number);
+            std::string value = str.substr(begin, end-begin+1);
+            if(value[0]=='"' && value[value.size()-1]=='"')
+                rv = new JSONValueString(value.substr(1, value.size()-2));
+            else if(value.find("null") != std::string::npos)
+                rv = new JSONValueNULL();
+            else if(value.find("true") != std::string::npos)
+                rv = new JSONValueBoolean(true);
+            else if(value.find("false") != std::string::npos)
+                rv = new JSONValueBoolean(false);
+            else
+            {
+                std::istringstream is(value);
+                double number;
+                if (is >> number)
+                    rv = new JSONValueNumber(number);
+            }
         }
         return rv;
     }
@@ -296,7 +298,7 @@ namespace json
         state.push(BEGIN);
         
         std::cout<<str<<std::endl;        
-        for(size_t idx = 0; idx < str.size(); idx++)
+        for(size_t idx = 0; idx < str.size() && state.top() != ERROR; idx++)
         {
             switch(state.top())
             {
@@ -378,10 +380,18 @@ namespace json
                             state.push(JSTRING);
                             break;
                         case ',':
+                        {
                             end = idx-1;
-                            objects.top()->put(key, factory(str, begin, end));
-                            state.pop();
+                            JSONValue *value = factory(str, begin, end);
+                            if(value != NULL)
+                            {
+                                objects.top()->put(key, value);
+                                state.pop();
+                            }
+                            else
+                                state.push(ERROR);
                             break;
+                        }
                         case '{':
                         {
                             JSONObject* obj = new JSONObject();
@@ -392,16 +402,24 @@ namespace json
                             break;
                         }
                         case '}':
+                        {
                             end = idx-1;
-                            objects.top()->put(key, factory(str, begin, end));
-                            objects.pop();
-                            state.pop();
-                            state.pop();
-                            if(state.top() == JSON || state.top() == JARRAY)
-                                state.push(COMMA);
-                            else if(state.top() == ROOT)
+                            JSONValue *value = factory(str, begin, end);
+                            if(value != NULL)
+                            {
+                                objects.top()->put(key, value);
+                                objects.pop();
                                 state.pop();
+                                state.pop();
+                                if(state.top() == JSON || state.top() == JARRAY)
+                                    state.push(COMMA);
+                                else if(state.top() == ROOT)
+                                    state.pop();
+                            }
+                            else
+                                state.push(ERROR);
                             break;
+                        }
                         case '[':
                         {
                             begin = idx+1;
@@ -418,10 +436,18 @@ namespace json
                     switch(str[idx])
                     {
                         case '"':
+                        {
                             end = idx;
-                            objects.top()->put(key, factory(str, begin, end));
-                            state.pop();
-                            state.push(COMMA);
+                            JSONValue *value = factory(str, begin, end);
+                            if(value != NULL)
+                            {
+                                objects.top()->put(key, value);
+                                state.pop();
+                                state.push(COMMA);
+                            }
+                            else
+                                state.push(ERROR);
+                            }
                             break;
                     }
                     break;
@@ -478,12 +504,20 @@ namespace json
                             break;
                         }
                         case ']':
+                        {
                             end = idx-1;
-                            arrays.top()->put(factory(str, begin, end));
-                            arrays.pop();
-                            state.pop();
-                            state.push(COMMA);
+                            JSONValue *value = factory(str, begin, end);
+                            if(value != NULL)
+                            {
+                                arrays.top()->put(value);
+                                arrays.pop();
+                                state.pop();
+                                state.push(COMMA);
+                            }
+                            else
+                                state.push(ERROR);
                             break;
+                        }
                         case ',':
                             end = idx-1;
                             arrays.top()->put(factory(str, begin, end));
@@ -508,13 +542,12 @@ namespace json
         
         if(state.top() != END)
         {
-            std::cout<<"ERROR: STOP at state "<<state.top()<<std::endl;
-            /*std::map<std::string, JSONValue*>::iterator it = map.begin();
+            std::map<std::string, JSONValue*>::iterator it = map.begin();
             for(it=map.begin(); it != map.end(); ++it)
             {
                 delete it->second;
             }
-            map.clear();*/
+            map.clear();
         }
     }
 
