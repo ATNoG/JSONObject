@@ -267,7 +267,6 @@ namespace json
     {
         JSONValue *rv = NULL;
         std::string value = str.substr(begin, end-begin+1);
-        std::cout<<"VALUE: "<<value<<std::endl;
         
         if(value[0]=='"' && value[value.size()-1]=='"')
             rv = new JSONValueString(value.substr(1, value.size()-2));
