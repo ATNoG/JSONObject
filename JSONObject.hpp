@@ -27,6 +27,12 @@ namespace json
             JSONValue(JSON_TYPE type);
             virtual void toString(std::string& toString)=0;
             virtual JSONValue* clone()=0;
+            bool isBooleanValue() const;
+            bool isNumberValue() const;
+            bool isStringValue() const;
+            bool isObjectValue() const;
+            bool isArrayValue() const;
+            bool isNullValue() const;
             virtual ~JSONValue();
         protected:
             JSON_TYPE vtype;
@@ -38,6 +44,7 @@ namespace json
             JSONValueNumber(double value);
             void toString(std::string& toString);
             JSONValue* clone();
+            void value(double& value);
             ~JSONValueNumber();
         private:
             double vvalue; 
@@ -49,6 +56,7 @@ namespace json
             JSONValueString(const std::string& value);
             void toString(std::string& toString);
             JSONValue* clone();
+            void value(std::string& value);
             ~JSONValueString();
         private:
             std::string vvalue; 
@@ -60,6 +68,7 @@ namespace json
             JSONValueBoolean(bool value);
             void toString(std::string& toString);
             JSONValue* clone();
+            void value(bool& value) const;
             ~JSONValueBoolean();
         private:
             bool vvalue;
@@ -93,6 +102,13 @@ namespace json
             JSONObject();
             JSONObject(const std::string& str);
             JSONObject(const JSONObject& obj);
+            void get(const std::string& key, JSONValue* &value);
+            void getBoolean(const std::string& key, bool &value);
+            void getDouble(const std::string& key, double &value);
+            void getInt(const std::string& key, int &value);
+            void getString(const std::string& key, std::string& value);
+            void getJSONArray(const std::string& key, JSONValueArray* &value);
+            void getJSONObject(const std::string& key, JSONObject* &value);
             void put(const std::string& key, double value);
             void put(const std::string& key, std::string value);
             void put(const std::string& key, bool value);

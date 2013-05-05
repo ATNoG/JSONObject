@@ -17,6 +17,54 @@ namespace json
     {
         vtype = type;
     }
+    
+    bool JSONValue::isBooleanValue() const
+    {
+        bool rv = false;
+        if(this->vtype == BOOLEAN)
+            rv = true;
+        return rv;
+    }
+    
+    bool JSONValue::isNumberValue() const
+    {
+        bool rv = false;
+        if(this->vtype == NUMBER)
+            rv = true;
+        return rv;
+    }
+    
+    bool JSONValue::isStringValue() const
+    {
+        bool rv = false;
+        if(this->vtype == STRING)
+            rv = true;
+        return rv;
+    }
+    
+    bool JSONValue::isObjectValue() const
+    {
+        bool rv = false;
+        if(this->vtype == OBJECT)
+            rv = true;
+        return rv;
+    }
+    
+    bool JSONValue::isArrayValue() const
+    {
+        bool rv = false;
+        if(this->vtype == ARRAY)
+            rv = true;
+        return rv;
+    }
+    
+    bool JSONValue::isNullValue() const
+    {
+        bool rv = false;
+        if(this->vtype == JNULL)
+            rv = true;
+        return rv;
+    }
 
     JSONValue::~JSONValue()
     {
@@ -40,6 +88,11 @@ namespace json
     JSONValue* JSONValueNumber::clone()
     {
         return new JSONValueNumber(vvalue);
+    }
+    
+    void JSONValueNumber::value(double& value)
+    {
+        value = vvalue;
     }
 
     JSONValueNumber::~JSONValueNumber()
@@ -65,6 +118,11 @@ namespace json
     {
         return new JSONValueString(vvalue);
     }
+    
+    void JSONValueString::value(std::string& value)
+    {
+        value = vvalue;
+    }
 
     JSONValueString::~JSONValueString()
     {
@@ -89,6 +147,11 @@ namespace json
     JSONValue* JSONValueBoolean::clone()
     {
         return new JSONValueBoolean(vvalue);
+    }
+    
+    void JSONValueBoolean::value(bool& value) const
+    {
+        value = vvalue;
     }
 
     JSONValueBoolean::~JSONValueBoolean()
@@ -187,6 +250,68 @@ namespace json
     JSONObject::JSONObject(const JSONObject& obj):JSONValue(OBJECT)
     {
         map = obj.map;
+    }
+    
+    void JSONObject::get(const std::string& key, JSONValue* &value)
+    {
+        JSONValue* _value = map[key];
+        
+        if(_value != NULL)
+            value = _value;
+        else
+            value = NULL;
+    }
+    
+    void JSONObject::getBoolean(const std::string& key, bool &value)
+    {
+        JSONValue* _value = map[key];
+        
+        if(_value != NULL && _value->isBooleanValue())
+            ((JSONValueBoolean*)_value)->value(value);
+    }
+    
+    void JSONObject::getDouble(const std::string& key, double &value)
+    {
+        JSONValue* _value = map[key];
+        
+        if(_value != NULL && _value->isNumberValue())
+            ((JSONValueNumber*)_value)->value(value);
+    }
+    
+    void JSONObject::getInt(const std::string& key, int &value)
+    {
+        JSONValue* _value = map[key];
+        
+        if(_value != NULL && _value->isNumberValue())
+        {
+            double temp = 0.0;
+            ((JSONValueNumber*)_value)->value(temp);
+            value = (int) temp;
+        }
+    }
+    
+    void JSONObject::getString(const std::string& key, std::string& value)
+    {
+        JSONValue* _value = map[key];
+        
+        if(_value != NULL && _value->isStringValue())
+            ((JSONValueString*)_value)->value(value);
+    }
+    
+    void JSONObject::getJSONArray(const std::string& key, JSONValueArray* &value)
+    {
+        JSONValue* _value = map[key];
+        
+        if(_value != NULL && _value->isArrayValue())
+            value = (JSONValueArray*)_value->clone();
+    }
+    
+    void JSONObject::getJSONObject(const std::string& key, JSONObject* &value)
+    {
+        JSONValue* _value = map[key];
+        
+        if(_value != NULL && _value->isObjectValue())
+            value = (JSONObject*)_value->clone();            
     }
 
     void JSONObject::put(const std::string& key, double value)

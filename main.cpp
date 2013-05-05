@@ -64,6 +64,15 @@ int main(int argc, char *argv[])
     str="";
     stuff.toString(str);
     std::cout<<str<<std::endl;
+
+    json::JSONObject* anotherJSON = NULL;
+
+    stuff.getJSONObject("json", anotherJSON);
+    str="";
+    anotherJSON->toString(str);
+    std::cout<<str<<std::endl;
+    
+    delete anotherJSON;
     
     std::string path="sample.json";
     std::ifstream file;
