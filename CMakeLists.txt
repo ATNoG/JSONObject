@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
-project(JSONObject)
+project(JObject)
 
 find_package(Doxygen)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -ansi -pedantic -g -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -ansi -pedantic -O2 -flto")
 
-add_executable(main main.cpp JSONObject.cpp)
+add_executable(main main.cpp JArray.cpp JBoolean.cpp JNull.cpp JNumber.cpp JObject.cpp JString.cpp JValue.cpp)
 target_link_libraries(main)
 
 if(DOXYGEN_FOUND)
