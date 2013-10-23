@@ -9,13 +9,14 @@
  *
  */
 
-#include "JObject.hpp"
+#include "JSONObject.hpp"
+#include "StringUtils.hpp"
 
 namespace json
 {
     JString::JString(const std::string& value):JValue(STRING)
     {
-        _value = value;
+        _value = unescapeJSON(value);
     }
 
     JString::JString(const JString& value):JValue(STRING)
@@ -26,7 +27,7 @@ namespace json
     void JString::toString(std::string& toString) const
     {
         toString.append("\"");
-        toString.append(_value);
+        toString.append(escapeJSON(_value));
         toString.append("\"");
     }
 
@@ -38,6 +39,11 @@ namespace json
     void JString::value(std::string& value)
     {
         value = _value;
+    }
+
+    std::string JString::value()
+    {
+        return std::string(_value);
     }
 
     JString::~JString()

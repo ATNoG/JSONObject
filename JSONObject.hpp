@@ -21,110 +21,133 @@ namespace json
 {
     enum JSON_TYPE {NUMBER, STRING, OBJECT, BOOLEAN, ARRAY, JNULL};
     
-    class JSONValue
+    class JValue
     {
         public:
-            JSONValue(JSON_TYPE type);
-            virtual void toString(std::string& toString)=0;
-            virtual JSONValue* clone()=0;
+            JValue(JSON_TYPE type);
+            virtual void toString(std::string& toString)const=0;
+            virtual JValue* clone()const=0;
             bool isBooleanValue() const;
             bool isNumberValue() const;
             bool isStringValue() const;
             bool isObjectValue() const;
             bool isArrayValue() const;
             bool isNullValue() const;
-            virtual ~JSONValue();
+            virtual ~JValue();
         protected:
-            JSON_TYPE vtype;
+            JSON_TYPE _type;
     };
     
-    class JSONValueNumber: public JSONValue
+    class JNumber: public JValue
     {
         public:
-            JSONValueNumber(double value);
-            void toString(std::string& toString);
-            JSONValue* clone();
+            JNumber(double value);
+            JNumber(const JNumber& value);
+            void toString(std::string& toString)const;
+            JValue* clone()const;
             void value(double& value);
-            ~JSONValueNumber();
+            ~JNumber();
         private:
-            double vvalue; 
+            double _value;
     };
     
-    class JSONValueString: public JSONValue
+    class JString: public JValue
     {
         public:
-            JSONValueString(const std::string& value);
-            void toString(std::string& toString);
-            JSONValue* clone();
+            JString(const std::string& value);
+            JString(const JString& value);
+            void toString(std::string& toString) const;
+            JValue* clone() const;
             void value(std::string& value);
-            ~JSONValueString();
+            std::string value();
+            ~JString();
         private:
-            std::string vvalue; 
+            std::string _value; 
     };
 
-    class JSONValueBoolean: public JSONValue
+    class JBoolean: public JValue
     {
         public:
-            JSONValueBoolean(bool value);
-            void toString(std::string& toString);
-            JSONValue* clone();
+            JBoolean(bool value);
+            JBoolean(const JBoolean& value);
+            void toString(std::string& toString)const;
+            JValue* clone() const;
             void value(bool& value) const;
-            ~JSONValueBoolean();
+            ~JBoolean();
         private:
-            bool vvalue;
+            bool _value;
     };
 
-    class JSONValueNULL: public JSONValue
+    class JNull: public JValue
     {
         public:
-            JSONValueNULL();
-            void toString(std::string& toString);
-            JSONValue* clone();
-            ~JSONValueNULL();
+            JNull();
+            void toString(std::string& toString)const;
+            JValue* clone()const;
+            ~JNull();
     };
     
-    class JSONValueArray: public JSONValue
+    class JArray: public JValue
     {
         public:
-            JSONValueArray();
-            JSONValueArray(std::vector<JSONValue*>& array);
-            void put(JSONValue* value);
-            void toString(std::string& toString);
-            JSONValue* clone();
-            ~JSONValueArray();
+            JArray();
+            JArray(const std::vector<JValue*>& array);
+            JArray(const std::vector<std::string>& array);
+            JArray(const std::vector<double>& array);
+            JArray(const std::vector<int>& array);
+            JArray(const std::vector<bool>& array);
+            void put(JValue* value);
+            JValue* at(size_t i) const;
+            size_t size();
+            void toString(std::string& toString)const;
+            JValue* clone()const;
+            ~JArray();
         private:
-            std::vector<JSONValue*> varray;
+            std::vector<JValue*> _array;
     };
     
-    class JSONObject: public JSONValue
+    class JSONObject: public JValue
     {   
         public:
             JSONObject();
+            JSONObject(const std::stringstream& str);
             JSONObject(const std::string& str);
             JSONObject(const JSONObject& obj);
-            void get(const std::string& key, JSONValue* &value);
-            void getBoolean(const std::string& key, bool &value);
-            void getDouble(const std::string& key, double &value);
-            void getInt(const std::string& key, int &value);
-            void getString(const std::string& key, std::string& value);
-            void getJSONArray(const std::string& key, JSONValueArray* &value);
-            void getJSONObject(const std::string& key, JSONObject* &value);
-            void put(const std::string& key, double value);
-            void put(const std::string& key, std::string value);
-            void put(const std::string& key, bool value);
-            void put(const std::string& key, JSONValueArray& array);
-            void put(const std::string& key, std::vector<std::string>& array);
-            void put(const std::string& key, JSONValue& obj);
+            void get(const std::string& key, JValue* &value) const;
+            void getBoolean(const std::string& key, bool &value) const;
+            void getDouble(const std::string& key, double &value) const;
+            void getInt(const std::string& key, int &value) const;
+            void getInt(const std::string& key, size_t &value) const;
+            void getString(const std::string& key, std::string& value) const;
+            void getJArray(const std::string& key, JArray& value) const;
+            void getJSONObject(const std::string& key, JSONObject& value) const;
+            void getStringArray(const std::string& key,
+                    std::vector<std::string>& value) const;
+            void put(const std::string& key, const std::string value);
+            void put(const std::string& key, const char* value);
+            void put(const std::string& key, const double value);
+            void put(const std::string& key, const int value);
+            void put(const std::string& key, const bool value);
+            void put(const std::string& key, const JArray& array);
+            void put(const std::string& key, const std::vector<std::string>& array);
+            void put(const std::string& key, const std::vector<double>& array);
+            void put(const std::string& key, const std::vector<int>& array);
+            void put(const std::string& key, const std::vector<bool>& array);
+            void put(const std::string& key, const JValue& obj);
             void putNull(const std::string& key);
-            void toString(std::string& toString);
-            JSONValue* clone();
+            bool exists(const std::string& key) const;
+            void remove(const std::string& key);
+            void clear();
+            void toString(std::string& toString) const;
+            JValue* clone() const;
+            JSONObject& operator=(const JSONObject& obj);
             ~JSONObject();
         private:
-            std::map<std::string, JSONValue*> map;
-            void put(const std::string& key, JSONValue* obj);
+            void put(const std::string& key, JValue* obj);
             void parse(const std::string& str);
-            JSONValue* factory(const std::string& str, size_t begin,
-            size_t end);
+            JValue* factory(const std::string& str,size_t begin,size_t end);
+           
+            std::map<std::string, JValue*> _map;
     };
 }
 #endif

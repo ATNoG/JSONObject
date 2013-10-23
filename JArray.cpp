@@ -9,7 +9,7 @@
  *
  */
 
-#include "JObject.hpp"
+#include "JSONObject.hpp"
 
 namespace json
 {
@@ -108,6 +108,16 @@ namespace json
     void JArray::put(JValue* value)
     {
         _array.push_back(value);
+    }
+
+    JValue* JArray::at(size_t i) const
+    {
+        return _array.at(i);
+    }
+
+    size_t JArray::size()
+    {
+        return _array.size();
     }
 
     void JArray::toString(std::string& toString) const

@@ -1,3 +1,14 @@
+/**
+ * @file JSONObject.cpp
+ * @class JSONObject
+ * @author Mario Antunes (mariolpantunes@gmail.com)
+ * @version 2.0
+ * @date October, 2013
+ *
+ * JSONObject class
+ *
+ */
+
 #include "JSONObject.hpp"
 
 #include <iostream>
@@ -7,364 +18,248 @@
 namespace json
 {
     enum PARSE_STATE {BEGIN, ROOT, JSON,
-    PRE_KEY, KEY, COLON, COMMA, VALUE,
-    JSTRING, JARRAY, END, ERROR};
-    
-    /**
-     * 
-     */
-    JSONValue::JSONValue(JSON_TYPE type)
-    {
-        vtype = type;
-    }
-    
-    bool JSONValue::isBooleanValue() const
-    {
-        bool rv = false;
-        if(this->vtype == BOOLEAN)
-            rv = true;
-        return rv;
-    }
-    
-    bool JSONValue::isNumberValue() const
-    {
-        bool rv = false;
-        if(this->vtype == NUMBER)
-            rv = true;
-        return rv;
-    }
-    
-    bool JSONValue::isStringValue() const
-    {
-        bool rv = false;
-        if(this->vtype == STRING)
-            rv = true;
-        return rv;
-    }
-    
-    bool JSONValue::isObjectValue() const
-    {
-        bool rv = false;
-        if(this->vtype == OBJECT)
-            rv = true;
-        return rv;
-    }
-    
-    bool JSONValue::isArrayValue() const
-    {
-        bool rv = false;
-        if(this->vtype == ARRAY)
-            rv = true;
-        return rv;
-    }
-    
-    bool JSONValue::isNullValue() const
-    {
-        bool rv = false;
-        if(this->vtype == JNULL)
-            rv = true;
-        return rv;
-    }
+        PRE_KEY, KEY, COLON, COMMA, VALUE,
+        JSTRING, JARRAY, END, ERROR};
 
-    JSONValue::~JSONValue()
+    JSONObject::JSONObject():JValue(OBJECT)
     {
     }
 
-    /**
-     * 
-     */
-    JSONValueNumber::JSONValueNumber(double value):JSONValue(NUMBER)
+    JSONObject::JSONObject(const std::stringstream& str):JValue(OBJECT)
     {
-        vvalue = value;
+        parse(str.str());
     }
 
-    void JSONValueNumber::toString(std::string& toString)
-    {
-        std::stringstream ss;
-        ss << vvalue;
-        toString.append(ss.str());
-    }
-
-    JSONValue* JSONValueNumber::clone()
-    {
-        return new JSONValueNumber(vvalue);
-    }
-    
-    void JSONValueNumber::value(double& value)
-    {
-        value = vvalue;
-    }
-
-    JSONValueNumber::~JSONValueNumber()
-    {
-    }
-
-    /**
-     * 
-     */
-    JSONValueString::JSONValueString(const std::string& value):JSONValue(STRING)
-    {
-        vvalue = value;
-    }
-
-    void JSONValueString::toString(std::string& toString)
-    {
-        toString.append("\"");
-        toString.append(vvalue);
-        toString.append("\"");
-    }
-
-    JSONValue* JSONValueString::clone()
-    {
-        return new JSONValueString(vvalue);
-    }
-    
-    void JSONValueString::value(std::string& value)
-    {
-        value = vvalue;
-    }
-
-    JSONValueString::~JSONValueString()
-    {
-    }
-
-    /**
-     *
-     */
-    JSONValueBoolean::JSONValueBoolean(bool value):JSONValue(BOOLEAN)
-    {
-        vvalue = value;
-    }
-
-    void JSONValueBoolean::toString(std::string& toString)
-    {
-        if(vvalue)
-            toString.append("true");
-        else
-            toString.append("false");
-    }
-
-    JSONValue* JSONValueBoolean::clone()
-    {
-        return new JSONValueBoolean(vvalue);
-    }
-    
-    void JSONValueBoolean::value(bool& value) const
-    {
-        value = vvalue;
-    }
-
-    JSONValueBoolean::~JSONValueBoolean()
-    {
-    }
-
-    /**
-     *
-     */
-
-    JSONValueNULL::JSONValueNULL():JSONValue(JNULL)
-    {
-    }
-
-    void JSONValueNULL::toString(std::string& toString)
-    {
-        toString.append("null");
-    }
-
-    JSONValue* JSONValueNULL::clone()
-    {
-        return new JSONValueNULL();
-    }
-
-    JSONValueNULL::~JSONValueNULL()
-    {
-    }
-    
-    /**
-     * 
-     */
-    JSONValueArray::JSONValueArray():JSONValue(ARRAY)
-    {
-    }
-    
-    JSONValueArray::JSONValueArray(std::vector<JSONValue*>& array):JSONValue(ARRAY)
-    {
-        std::vector<JSONValue*>::iterator it = array.begin();
-        for(; it != array.end(); ++it)
-        {
-            varray.push_back((*it)->clone());
-        }
-    }
-    
-    void JSONValueArray::put(JSONValue* value)
-    {
-        varray.push_back(value);
-    }
-    
-    void JSONValueArray::toString(std::string& toString)
-    {
-        toString.append("[");
-        std::vector<JSONValue*>::iterator it = varray.begin();
-        for(; it != varray.end(); ++it)
-        {
-            (*it)->toString(toString);
-            toString.append(",");
-        }
-        if(toString[toString.size()-1] == ',')
-            toString[toString.size()-1] = ']';
-        else
-            toString.append("]");
-    }
-    JSONValue* JSONValueArray::clone()
-    {
-        JSONValueArray* rv = new JSONValueArray();
-        std::vector<JSONValue*>::iterator it = varray.begin();
-        for(; it != varray.end(); ++it)
-        {
-            rv->varray.push_back((*it)->clone());
-        }
-        return rv;
-    }
-    JSONValueArray::~JSONValueArray()
-    {
-        std::vector<JSONValue*>::iterator it = varray.begin();
-        for(; it != varray.end(); ++it)
-        {
-            delete *it;
-        }
-        varray.clear();
-    }
-    
-    /**
-     * 
-     */
-    JSONObject::JSONObject():JSONValue(OBJECT)
-    {
-    }
-    
-    JSONObject::JSONObject(const std::string& str):JSONValue(OBJECT)
+    JSONObject::JSONObject(const std::string& str):JValue(OBJECT)
     {
         parse(str);
     }
 
-    JSONObject::JSONObject(const JSONObject& obj):JSONValue(OBJECT)
+    JSONObject::JSONObject(const JSONObject& obj):JValue(OBJECT)
     {
-        map = obj.map;
+        std::map<std::string, JValue*>::const_iterator it = obj._map.begin();
+        for(; it != obj._map.end(); ++it)
+            _map[it->first] = it->second->clone();
     }
-    
-    void JSONObject::get(const std::string& key, JSONValue* &value)
+
+    void JSONObject::get(const std::string& key, JValue* &value) const
     {
-        JSONValue* _value = map[key];
-        
-        if(_value != NULL)
-            value = _value;
-        else
-            value = NULL;
+        value = _map.at(key);
     }
-    
-    void JSONObject::getBoolean(const std::string& key, bool &value)
+
+    void JSONObject::getBoolean(const std::string& key, bool &value) const 
     {
-        JSONValue* _value = map[key];
-        
+        JValue* _value = _map.at(key);
+
         if(_value != NULL && _value->isBooleanValue())
-            ((JSONValueBoolean*)_value)->value(value);
+            ((JBoolean*)_value)->value(value);
     }
-    
-    void JSONObject::getDouble(const std::string& key, double &value)
+
+    void JSONObject::getDouble(const std::string& key, double &value) const
     {
-        JSONValue* _value = map[key];
-        
+        JValue* _value = _map.at(key);
+
         if(_value != NULL && _value->isNumberValue())
-            ((JSONValueNumber*)_value)->value(value);
+            ((JNumber*)_value)->value(value);
     }
-    
-    void JSONObject::getInt(const std::string& key, int &value)
+
+    void JSONObject::getInt(const std::string& key, int &value) const
     {
-        JSONValue* _value = map[key];
-        
+        JValue* _value = _map.at(key);
+
         if(_value != NULL && _value->isNumberValue())
         {
             double temp = 0.0;
-            ((JSONValueNumber*)_value)->value(temp);
+            ((JNumber*)_value)->value(temp);
             value = (int) temp;
         }
     }
-    
-    void JSONObject::getString(const std::string& key, std::string& value)
+
+    void JSONObject::getInt(const std::string& key, size_t &value) const
     {
-        JSONValue* _value = map[key];
-        
+        JValue* _value = _map.at(key);
+
+        if(_value != NULL && _value->isNumberValue())
+        {
+            double temp = 0.0;
+            ((JNumber*)_value)->value(temp);
+            value = (size_t) temp;
+        }
+    }
+
+    void JSONObject::getString(const std::string& key, std::string& value) const
+    {
+        JValue* _value = _map.at(key);
+
         if(_value != NULL && _value->isStringValue())
-            ((JSONValueString*)_value)->value(value);
+            ((JString*)_value)->value(value);
     }
-    
-    void JSONObject::getJSONArray(const std::string& key, JSONValueArray* &value)
+
+    void JSONObject::getStringArray(const std::string& key,
+            std::vector<std::string>& value) const
     {
-        JSONValue* _value = map[key];
-        
+        JValue* _value = _map.at(key);
+
         if(_value != NULL && _value->isArrayValue())
-            value = (JSONValueArray*)_value->clone();
+        {
+            JArray* array = (JArray*) _value;
+            size_t i = 0;
+
+            for(; i < array->size()/8; i=i+8)
+            {
+                JValue *v1 = array->at(i);
+                JValue *v2 = array->at(i+1);
+                if(v1 != NULL && v1->isStringValue())
+                    value.push_back(((JString*)v1)->value());
+                if(v2 != NULL && v2->isStringValue())
+                    value.push_back(((JString*)v2)->value());
+
+                v1 = array->at(i+2);
+                v2 = array->at(i+3);
+                if(v1 != NULL && v1->isStringValue())
+                    value.push_back(((JString*)v1)->value());
+                if(v2 != NULL && v2->isStringValue())
+                    value.push_back(((JString*)v2)->value());
+
+                v1 = array->at(i+4);
+                v2 = array->at(i+5);
+                if(v1 != NULL && v1->isStringValue())
+                    value.push_back(((JString*)v1)->value());
+                if(v2 != NULL && v2->isStringValue())
+                    value.push_back(((JString*)v2)->value());
+
+                v1 = array->at(i+6);
+                v2 = array->at(i+7);
+                if(v1 != NULL && v1->isStringValue())
+                    value.push_back(((JString*)v1)->value());
+                if(v2 != NULL && v2->isStringValue())
+                    value.push_back(((JString*)v2)->value());
+            }
+
+            for(; i < array->size(); ++i)
+            {
+                JValue *v = array->at(i);
+                if(v != NULL && v->isStringValue())
+                    value.push_back(((JString*)v)->value());
+            }
+        }
     }
-    
-    void JSONObject::getJSONObject(const std::string& key, JSONObject* &value)
+
+    void JSONObject::getJArray(const std::string& key, JArray &value) const
     {
-        JSONValue* _value = map[key];
-        
+        JValue* _value = _map.at(key);
+
+        if(_value != NULL && _value->isArrayValue())
+            value = *((JArray*)_value);
+    }
+
+    void JSONObject::getJSONObject(const std::string& key, JSONObject &value) const
+    {
+        JValue* _value = _map.at(key);
+
         if(_value != NULL && _value->isObjectValue())
-            value = (JSONObject*)_value->clone();            
+            value = *((JSONObject*)_value);
     }
 
-    void JSONObject::put(const std::string& key, double value)
+    void JSONObject::put(const std::string& key, const double value)
     {
-        map[key] = new JSONValueNumber(value);
+        this->remove(key);
+        _map[key] = new JNumber(value);
     }
 
-    void JSONObject::put(const std::string& key, std::string value)
+    void JSONObject::put(const std::string& key, const int value)
     {
-        map[key] = new JSONValueString(value);
+        this->remove(key);
+        _map[key] = new JNumber(value);
     }
 
-    void JSONObject::put(const std::string& key, bool value)
+    void JSONObject::put(const std::string& key, const std::string value)
     {
-        map[key] = new JSONValueBoolean(value);
+        this->remove(key);
+        _map[key] = new JString(value);
+    }
+
+    void JSONObject::put(const std::string& key, const char* value)
+    {
+        std::string strValue(value);
+        this->put(key, strValue);
+    }
+
+    void JSONObject::put(const std::string& key, const bool value)
+    {
+        this->remove(key);
+        _map[key] = new JBoolean(value);
     }
 
     void JSONObject::putNull(const std::string& key)
     {
-        map[key] = new JSONValueNULL();
+        this->remove(key);
+        _map[key] = new JNull();
     }
 
-    void JSONObject::put(const std::string& key, JSONValue& obj)
+    void JSONObject::put(const std::string& key, const JValue& obj)
     {
-        map[key] = obj.clone();
+        this->remove(key);
+        _map[key] = obj.clone();
     }
-    
-    void JSONObject::put(const std::string& key, JSONValue* obj)
+
+    void JSONObject::put(const std::string& key, JValue* obj)
     {
-        map[key] = obj;
+        this->remove(key);
+        _map[key] = obj;
     }
-    
-    void JSONObject::put(const std::string& key, JSONValueArray& array)
+
+    void JSONObject::put(const std::string& key, const JArray& array)
     {
-        map[key] = array.clone();
+        this->remove(key);
+        _map[key] = array.clone();
     }
-    
-    void JSONObject::put(const std::string& key, std::vector<std::string>& array)
+
+    void JSONObject::put(const std::string& key, const std::vector<std::string>& array)
     {
-        JSONValueArray* value = new JSONValueArray();
-        std::vector<std::string>::iterator it = array.begin();
-        for(; it != array.end(); ++it)
+        this->remove(key);
+        JArray* value = new JArray(array);
+        _map[key] = value;
+    }
+
+    void JSONObject::put(const std::string& key, const std::vector<int>& array)
+    {
+        this->remove(key);
+        JArray* value = new JArray(array);
+        _map[key] = value;
+    }
+
+    bool JSONObject::exists(const std::string& key) const
+    {
+        bool rv = false;
+        if(_map.count(key) > 0)
+            rv = true;
+        return rv;
+    }
+
+    void JSONObject::remove(const std::string& key)
+    {
+        if(this->exists(key))
         {
-            value->put(new JSONValueString((*it)));
+            JValue* value = _map[key];
+            delete value;
+            _map.erase(key);
         }
-        map[key] = value;
     }
 
-    void JSONObject::toString(std::string& toString)
+    void JSONObject::clear()
+    {
+        std::map<std::string, JValue*>::iterator it = _map.begin();
+        for(; it != _map.end(); ++it)
+            delete it->second;
+        _map.clear();
+    }
+
+    void JSONObject::toString(std::string& toString) const
     {
         toString.append("{");
-        std::map<std::string, JSONValue*>::iterator it = map.begin();
-        for(; it != map.end(); ++it)
+        std::map<std::string, JValue*>::const_iterator it = _map.begin();
+        for(; it != _map.end(); ++it)
         {
             toString.append("\"");
             toString.append(it->first);
@@ -378,50 +273,69 @@ namespace json
             toString.append("}");
     }
 
-    JSONValue* JSONObject::clone()
+    JValue* JSONObject::clone() const
     {
-        JSONObject* rv = new JSONObject();
-        std::map<std::string, JSONValue*>::iterator it = map.begin();
-        for(it=map.begin(); it != map.end(); ++it)
-            rv->map[it->first] = it->second->clone();
-        return rv;
+        JSONObject* value = new JSONObject();
+
+        std::map<std::string, JValue*>::const_iterator it = _map.begin();
+        for(; it != _map.end(); ++it)
+            value->_map[it->first] = it->second->clone(); 
+
+        return value;
     }
-    
-    JSONValue* JSONObject::factory(const std::string& str,
-    size_t begin, size_t end)
+
+    JSONObject& JSONObject::operator=(const JSONObject& obj)
     {
-        JSONValue *rv = NULL;
+        if(this != &obj)
+        {
+            this->clear();
+            std::map<std::string, JValue*>::const_iterator it = obj._map.begin();
+            for(; it != obj._map.end(); ++it)
+                this->_map[it->first] = it->second->clone();
+        } 
+
+        return *this;
+    }
+
+    JSONObject::~JSONObject()
+    {
+        this->clear();
+    }
+
+    JValue* JSONObject::factory(const std::string& str, size_t begin, size_t end)
+    {
+        JValue *rv = NULL;
         if(begin <= end)
         {
             std::string value = str.substr(begin, end-begin+1);
             if(value[0]=='"' && value[value.size()-1]=='"')
-                rv = new JSONValueString(value.substr(1, value.size()-2));
+                rv = new JString(value.substr(1, value.size()-2));
             else if(value.find("null") != std::string::npos)
-                rv = new JSONValueNULL();
+                rv = new JNull();
             else if(value.find("true") != std::string::npos)
-                rv = new JSONValueBoolean(true);
+                rv = new JBoolean(true);
             else if(value.find("false") != std::string::npos)
-                rv = new JSONValueBoolean(false);
+                rv = new JBoolean(false);
             else
             {
                 std::istringstream is(value);
                 double number;
                 if (is >> number)
-                    rv = new JSONValueNumber(number);
+                    rv = new JNumber(number);
             }
         }
         return rv;
     }
-    
+
     void JSONObject::parse(const std::string& str)
     {
         size_t begin = 0, end = 0;
         std::string key;
         std::stack<PARSE_STATE> state;
         std::stack<JSONObject*> objects;
-        std::stack<JSONValueArray*> arrays;
+        std::stack<JArray*> arrays;
         state.push(BEGIN);
-        
+
         std::cout<<str<<std::endl;        
         for(size_t idx = 0; idx < str.size() && state.top() != ERROR; idx++)
         {
@@ -505,73 +419,76 @@ namespace json
                             state.push(JSTRING);
                             break;
                         case ',':
-                        {
-                            end = idx-1;
-                            JSONValue *value = factory(str, begin, end);
-                            if(value != NULL)
                             {
-                                objects.top()->put(key, value);
-                                state.pop();
-                            }
-                            else
-                                state.push(ERROR);
-                            break;
-                        }
-                        case '{':
-                        {
-                            JSONObject* obj = new JSONObject();
-                            objects.top()->put(key, obj);
-                            objects.push(obj);
-                            state.pop();
-                            state.push(JSON);
-                            break;
-                        }
-                        case '}':
-                        {
-                            end = idx-1;
-                            JSONValue *value = factory(str, begin, end);
-                            if(value != NULL)
-                            {
-                                objects.top()->put(key, value);
-                                objects.pop();
-                                state.pop();
-                                state.pop();
-                                if(state.top() == JSON || state.top() == JARRAY)
-                                    state.push(COMMA);
-                                else if(state.top() == ROOT)
+                                end = idx-1;
+                                JValue *value = factory(str, begin, end);
+                                if(value != NULL)
+                                {
+                                    objects.top()->put(key, value);
                                     state.pop();
+                                }
+                                else
+                                    state.push(ERROR);
+                                break;
                             }
-                            else
-                                state.push(ERROR);
-                            break;
-                        }
+                        case '{':
+                            {
+                                JSONObject* obj = new JSONObject();
+                                objects.top()->put(key, obj);
+                                objects.push(obj);
+                                state.pop();
+                                state.push(JSON);
+                                break;
+                            }
+                        case '}':
+                            {
+                                end = idx-1;
+                                JValue *value = factory(str, begin, end);
+                                if(value != NULL)
+                                {
+                                    objects.top()->put(key, value);
+                                    objects.pop();
+                                    state.pop();
+                                    state.pop();
+                                    if(state.top() == JSON || state.top() == JARRAY)
+                                        state.push(COMMA);
+                                    else if(state.top() == ROOT)
+                                        state.pop();
+                                }
+                                else
+                                    state.push(ERROR);
+                                break;
+                            }
                         case '[':
-                        {
-                            begin = idx+1;
-                            JSONValueArray *array = new JSONValueArray();
-                            objects.top()->put(key, array);
-                            arrays.push(array);
-                            state.pop();
-                            state.push(JARRAY);
-                            break;
-                        }
+                            {
+                                begin = idx+1;
+                                JArray *array = new JArray();
+                                objects.top()->put(key, array);
+                                arrays.push(array);
+                                state.pop();
+                                state.push(JARRAY);
+                                break;
+                            }
                     }
                     break;
                 case JSTRING:
                     switch(str[idx])
                     {
                         case '"':
-                        {
-                            end = idx;
-                            JSONValue *value = factory(str, begin, end);
-                            if(value != NULL)
                             {
-                                objects.top()->put(key, value);
-                                state.pop();
-                                state.push(COMMA);
-                            }
-                            else
-                                state.push(ERROR);
+                                if(str[idx-1] != '\\')
+                                {
+                                    end = idx;
+                                    JValue *value = factory(str, begin, end);
+                                    if(value != NULL)
+                                    {
+                                        objects.top()->put(key, value);
+                                        state.pop();
+                                        state.push(COMMA);
+                                    }
+                                    else
+                                        state.push(ERROR);
+                                }
                             }
                             break;
                     }
@@ -580,13 +497,13 @@ namespace json
                     switch(str[idx])
                     {
                         case ',':
-                        {
-                            state.pop();
-                            begin = idx+1;
-                            if(state.top() == ROOT || state.top() == JSON)
-                                state.push(PRE_KEY);
-                            break;
-                        }
+                            {
+                                state.pop();
+                                begin = idx+1;
+                                if(state.top() == ROOT || state.top() == JSON)
+                                    state.push(PRE_KEY);
+                                break;
+                            }
                         case '}':
                             state.pop();
                             if(state.top() == JSON)
@@ -620,69 +537,54 @@ namespace json
                             state.push(JSTRING);
                             break;
                         case '[':
-                        {
-                            begin = idx+1;
-                            JSONValueArray *array = new JSONValueArray();
-                            arrays.top()->put(array);
-                            arrays.push(array);
-                            state.push(JARRAY);
-                            break;
-                        }
-                        case ']':
-                        {
-                            end = idx-1;
-                            JSONValue *value = factory(str, begin, end);
-                            if(value != NULL)
                             {
-                                arrays.top()->put(value);
-                                arrays.pop();
-                                state.pop();
-                                state.push(COMMA);
+                                begin = idx+1;
+                                JArray *array = new JArray();
+                                arrays.top()->put(array);
+                                arrays.push(array);
+                                state.push(JARRAY);
+                                break;
                             }
-                            else
-                                state.push(ERROR);
-                            break;
-                        }
+                        case ']':
+                            {
+                                end = idx-1;
+                                JValue *value = factory(str, begin, end);
+                                if(value != NULL)
+                                {
+                                    arrays.top()->put(value);
+                                    arrays.pop();
+                                    state.pop();
+                                    state.push(COMMA);
+                                }
+                                else
+                                    state.push(ERROR);
+                                break;
+                            }
                         case ',':
                             end = idx-1;
                             arrays.top()->put(factory(str, begin, end));
                             begin = idx+1;
                             break;
                         case '{':
-                        {
-                            JSONObject* obj = new JSONObject();
-                            arrays.top()->put(obj);
-                            objects.push(obj);
-                            state.push(JSON);
-                            break;
-                        }
+                            {
+                                JSONObject* obj = new JSONObject();
+                                arrays.top()->put(obj);
+                                objects.push(obj);
+                                state.push(JSON);
+                                break;
+                            }
                     }
-                break;
-            case END:
-                break;
-            case ERROR:
-                break;
+                    break;
+                case END:
+                    break;
+                case ERROR:
+                    break;
             }
         }
-        
+
         if(state.top() != END)
         {
-            std::map<std::string, JSONValue*>::iterator it = map.begin();
-            for(it=map.begin(); it != map.end(); ++it)
-            {
-                delete it->second;
-            }
-            map.clear();
+            this->clear();
         }
-    }
-
-    JSONObject::~JSONObject()
-    {
-        std::map<std::string, JSONValue*>::iterator it = map.begin();
-        for(it=map.begin(); it != map.end(); ++it)
-        {
-            delete it->second;
-        }
-        map.clear();
     }
 }

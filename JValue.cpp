@@ -9,7 +9,7 @@
  *
  */
 
-#include "JObject.hpp"
+#include "JSONObject.hpp"
 
 namespace json
 {

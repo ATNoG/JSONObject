@@ -1,12 +1,18 @@
 cmake_minimum_required(VERSION 2.6)
-project(JObject)
+project(JSONObject)
 
 find_package(Doxygen)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -ansi -pedantic -O2 -flto")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -ansi -pedantic -O2 -flto -march=native")
+if(NOT LIB_INSTALL_DIR)
+    set(LIB_INSTALL_DIR "/lib/")
+endif(NOT LIB_INSTALL_DIR)
 
-add_executable(main main.cpp JArray.cpp JBoolean.cpp JNull.cpp JNumber.cpp JObject.cpp JString.cpp JValue.cpp)
+add_executable(main main.cpp JArray.cpp JBoolean.cpp JNull.cpp JNumber.cpp JSONObject.cpp JString.cpp JValue.cpp StringUtils.cpp)
 target_link_libraries(main)
+
+add_library(jsonobject SHARED JArray.cpp JBoolean.cpp JNull.cpp JNumber.cpp JSONObject.cpp JString.cpp JValue.cpp StringUtils.cpp)
+target_link_libraries(jsonobject)
 
 if(DOXYGEN_FOUND)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
@@ -15,3 +21,8 @@ if(DOXYGEN_FOUND)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen" VERBATIM)
 endif(DOXYGEN_FOUND)
+
+if(UNIX)
+    install(TARGETS jsonobject DESTINATION ${LIB_INSTALL_DIR})
+    install(FILES JSONObject.hpp DESTINATION include)
+endif(UNIX)

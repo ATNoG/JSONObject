@@ -1,4 +1,4 @@
-#include "JObject.hpp"
+#include "JSONObject.hpp"
 
 #include <iostream>
 #include <string>
@@ -20,9 +20,24 @@ int main(int argc, char *argv[])
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     std::cout<<"Time: "<<elapsed_secs<<" seconds."<<std::endl;*/
     
-    json::JObject j;
-    j.put("string", "Hello World!!");
+    std::string txt="{\"J\":5,\"0\":\"{\\\"key\\\":\\\"value\\\"}\"}";
+
+    std::cout<<"TXT:"<<txt<<std::endl;
+    
     std::string str;
+    json::JSONObject j2(txt);
+
+    j2.getString("0", str);
+    std::cout<<str<<std::endl;
+    str.clear();
+
+    j2.toString(str);
+    std::cout<<str<<std::endl;
+    str.clear();
+
+    json::JSONObject j;
+    j.put("string", "Hello World!!");
+    
     j.toString(str);
     std::cout<<str<<std::endl;
     
@@ -31,7 +46,7 @@ int main(int argc, char *argv[])
     j.toString(str);
     std::cout<<str<<std::endl;
     
-    json::JObject insideJ;
+    json::JSONObject insideJ;
     
     std::vector<int> v (8,5);
 
@@ -45,9 +60,9 @@ int main(int argc, char *argv[])
     j.toString(str);
     std::cout<<str<<std::endl;
     
-    json::JObject retriveJ;
+    json::JSONObject retriveJ;
     
-    j.getJObject("JSON", retriveJ);
+    j.getJSONObject("JSON", retriveJ);
     
     str="";
     retriveJ.toString(str);
@@ -68,7 +83,7 @@ int main(int argc, char *argv[])
         std::cout<<"success"<<std::endl;
         ss << file.rdbuf();
         std::string txt = ss.str();
-        json::JObject stuff(txt);
+        json::JSONObject stuff(txt);
         str="";
         stuff.toString(str);
         std::cout<<str<<std::endl;
