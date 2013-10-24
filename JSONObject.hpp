@@ -116,7 +116,8 @@ namespace json
             void put(JValue* value);
             
             JValue*& at(size_t i);
-            size_t size();
+            
+            size_t size() const;
             void toString(std::string& toString) const;
             JValue* clone()const;
             ~JArray();
@@ -141,7 +142,7 @@ namespace json
             void get(const std::string& key, JArray& value) const;
             void get(const std::string& key, JSONObject& value) const;
             
-            void put(const std::string& key, JValue* &value);
+            void put(const std::string& key, JValue* value);
             void put(const std::string& key, const std::string value);
             void put(const std::string& key, const char* value);
             void put(const std::string& key, const double value);

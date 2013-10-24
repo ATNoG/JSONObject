@@ -112,7 +112,7 @@ namespace json
             value = *((JSONObject*)_value);
     }
 
-    void JSONObject::put(const std::string& key, JValue*& value)
+    void JSONObject::put(const std::string& key, JValue* value)
     {
         this->remove(key);
         _map[key] = value;
@@ -144,6 +144,8 @@ namespace json
 
     void JSONObject::put(const std::string& key, const bool value)
     {
+        std::cerr<<"Put Boolean"<<std::endl;
+        
         this->remove(key);
         _map[key] = new JBoolean(value);
     }
@@ -202,7 +204,12 @@ namespace json
     {
         std::map<std::string, JValue*>::iterator it = _map.begin();
         for(; it != _map.end(); ++it)
+        {
+            std::cerr<<"Delete: "<<it->first<<std::endl;
+            
             delete it->second;
+            //_map.erase(it->first);
+        }
         _map.clear();
     }
 
@@ -287,7 +294,6 @@ namespace json
         std::stack<JArray*> arrays;
         state.push(BEGIN);
 
-        std::cout<<str<<std::endl;        
         for(size_t idx = 0; idx < str.size() && state.top() != ERROR; idx++)
         {
             switch(state.top())
@@ -413,7 +419,7 @@ namespace json
                         case '[':
                             {
                                 begin = idx+1;
-                                JArray *array = new JArray();
+                                JArray* array = new JArray();
                                 objects.top()->put(key, array);
                                 arrays.push(array);
                                 state.pop();
@@ -433,8 +439,21 @@ namespace json
                                     JValue *value = factory(str, begin, end);
                                     if(value != NULL)
                                     {
-                                        objects.top()->put(key, value);
                                         state.pop();
+                                        switch(state.top())
+                                        {
+                                            case ROOT:
+                                                objects.top()->put(key, value);
+                                                break;
+                                            case JSON:
+                                                objects.top()->put(key, value);
+                                                break;
+                                            case JARRAY:
+                                                arrays.top()->put(value);
+                                                break;
+                                            default:
+                                                break;
+                                        }
                                         state.push(COMMA);
                                     }
                                     else
@@ -512,10 +531,14 @@ namespace json
                                 break;
                             }
                         case ',':
-                            end = idx-1;
-                            arrays.top()->put(factory(str, begin, end));
-                            begin = idx+1;
-                            break;
+                            {
+                                end = idx-1;
+                                JValue *value = factory(str, begin, end);
+                                if(value != NULL)
+                                    arrays.top()->put(value);
+                                begin = idx+1;
+                                break;
+                            }
                         case '{':
                             {
                                 JSONObject* obj = new JSONObject();
@@ -534,8 +557,6 @@ namespace json
         }
 
         if(state.top() != END)
-        {
             this->clear();
-        }
     }
 }

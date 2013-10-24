@@ -11,6 +11,8 @@
 
 #include "JSONObject.hpp"
 
+#include <iostream>
+
 namespace json
 {
     JArray::JArray():JValue(ARRAY)
@@ -62,7 +64,7 @@ namespace json
     {
         size_t i = 0;
 
-        for(; i < array.size()/8; i=i+8)
+        for(; i < array.size()/8; i = i+8)
         {
             _array.push_back(new JNumber(array[i]));
             _array.push_back(new JNumber(array[i+1]));
@@ -82,7 +84,7 @@ namespace json
     {
         size_t i = 0;
 
-        for(; i < array.size()/8; i=i+8)
+        for(; i < array.size()/8; i = i+8)
         {
             _array.push_back(new JBoolean(array[i]));
             _array.push_back(new JBoolean(array[i+1]));
@@ -100,9 +102,22 @@ namespace json
 
     JArray::JArray(const std::vector<JValue*>& array):JValue(ARRAY)
     {
-        std::vector<JValue*>::const_iterator it = array.begin();
-        for(; it != array.end(); ++it)
-            _array.push_back((*it)->clone());
+        size_t i = 0;
+
+        for(; i < array.size()/8; i = i+8)
+        {
+            _array.push_back(array[i]->clone());
+            _array.push_back(array[i+1]->clone());
+            _array.push_back(array[i+2]->clone());
+            _array.push_back(array[i+3]->clone());
+            _array.push_back(array[i+4]->clone());
+            _array.push_back(array[i+5]->clone());
+            _array.push_back(array[i+6]->clone());
+            _array.push_back(array[i+7]->clone());
+        }
+        
+        for(; i < array.size(); ++i)
+            _array.push_back(array[i]->clone());
     }
 
 
@@ -249,7 +264,7 @@ namespace json
         return _array.at(i);
     }
 
-    size_t JArray::size()
+    size_t JArray::size() const
     {
         return _array.size();
     }

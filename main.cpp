@@ -10,16 +10,19 @@
 
 int main(int argc, char *argv[])
 {
-    std::string txt="{\"J\":5,\"0\":\"{\\\"key\\\":\\\"value\\\"}\"}";
+    std::string txt= "{\"keys\":[\"0x000\",\"0x001\",\"0x002\",\"0x003\"],\"type\":\"getall request\"}";
+
+    //std::string txt= "{\"keys\":[\"0x000\",\"0x001\",\"0x002\",\"0x003\"]}";
+
     std::cout<<"TXT:"<<txt<<std::endl;
     std::string str;
     json::JSONObject j(txt);
 
-    j.get("0", str);
+    j.toString(str);
     std::cout<<str<<std::endl;
     str.clear();
 
-    j.toString(str);
+    /*j.get("type", str);
     std::cout<<str<<std::endl;
     str.clear();
 
@@ -53,7 +56,7 @@ int main(int argc, char *argv[])
     retriveJ.toString(str);
     std::cout<<str<<std::endl;
     
-    /*std::string path="sample.json";
+    std::string path="sample.json";
     std::ifstream file;
     std::stringstream ss;
 
