@@ -47,7 +47,7 @@ namespace json
         value = _map.at(key);
     }
 
-    void JSONObject::getBoolean(const std::string& key, bool &value) const 
+    void JSONObject::get(const std::string& key, bool &value) const 
     {
         JValue* _value = _map.at(key);
 
@@ -55,7 +55,7 @@ namespace json
             ((JBoolean*)_value)->value(value);
     }
 
-    void JSONObject::getDouble(const std::string& key, double &value) const
+    void JSONObject::get(const std::string& key, double &value) const
     {
         JValue* _value = _map.at(key);
 
@@ -63,7 +63,7 @@ namespace json
             ((JNumber*)_value)->value(value);
     }
 
-    void JSONObject::getInt(const std::string& key, int &value) const
+    void JSONObject::get(const std::string& key, int &value) const
     {
         JValue* _value = _map.at(key);
 
@@ -75,7 +75,7 @@ namespace json
         }
     }
 
-    void JSONObject::getInt(const std::string& key, size_t &value) const
+    void JSONObject::get(const std::string& key, size_t &value) const
     {
         JValue* _value = _map.at(key);
 
@@ -87,7 +87,7 @@ namespace json
         }
     }
 
-    void JSONObject::getString(const std::string& key, std::string& value) const
+    void JSONObject::get(const std::string& key, std::string& value) const
     {
         JValue* _value = _map.at(key);
 
@@ -95,57 +95,8 @@ namespace json
             ((JString*)_value)->value(value);
     }
 
-    void JSONObject::getStringArray(const std::string& key,
-            std::vector<std::string>& value) const
-    {
-        JValue* _value = _map.at(key);
-
-        if(_value != NULL && _value->isArrayValue())
-        {
-            JArray* array = (JArray*) _value;
-            size_t i = 0;
-
-            for(; i < array->size()/8; i=i+8)
-            {
-                JValue *v1 = array->at(i);
-                JValue *v2 = array->at(i+1);
-                if(v1 != NULL && v1->isStringValue())
-                    value.push_back(((JString*)v1)->value());
-                if(v2 != NULL && v2->isStringValue())
-                    value.push_back(((JString*)v2)->value());
-
-                v1 = array->at(i+2);
-                v2 = array->at(i+3);
-                if(v1 != NULL && v1->isStringValue())
-                    value.push_back(((JString*)v1)->value());
-                if(v2 != NULL && v2->isStringValue())
-                    value.push_back(((JString*)v2)->value());
-
-                v1 = array->at(i+4);
-                v2 = array->at(i+5);
-                if(v1 != NULL && v1->isStringValue())
-                    value.push_back(((JString*)v1)->value());
-                if(v2 != NULL && v2->isStringValue())
-                    value.push_back(((JString*)v2)->value());
-
-                v1 = array->at(i+6);
-                v2 = array->at(i+7);
-                if(v1 != NULL && v1->isStringValue())
-                    value.push_back(((JString*)v1)->value());
-                if(v2 != NULL && v2->isStringValue())
-                    value.push_back(((JString*)v2)->value());
-            }
-
-            for(; i < array->size(); ++i)
-            {
-                JValue *v = array->at(i);
-                if(v != NULL && v->isStringValue())
-                    value.push_back(((JString*)v)->value());
-            }
-        }
-    }
-
-    void JSONObject::getJArray(const std::string& key, JArray &value) const
+    
+    void JSONObject::get(const std::string& key, JArray &value) const
     {
         JValue* _value = _map.at(key);
 
@@ -153,12 +104,18 @@ namespace json
             value = *((JArray*)_value);
     }
 
-    void JSONObject::getJSONObject(const std::string& key, JSONObject &value) const
+    void JSONObject::get(const std::string& key, JSONObject &value) const
     {
         JValue* _value = _map.at(key);
 
         if(_value != NULL && _value->isObjectValue())
             value = *((JSONObject*)_value);
+    }
+
+    void JSONObject::put(const std::string& key, JValue*& value)
+    {
+        this->remove(key);
+        _map[key] = value;
     }
 
     void JSONObject::put(const std::string& key, const double value)
@@ -197,16 +154,10 @@ namespace json
         _map[key] = new JNull();
     }
 
-    void JSONObject::put(const std::string& key, const JValue& obj)
+    void JSONObject::put(const std::string& key, const JSONObject& value)
     {
         this->remove(key);
-        _map[key] = obj.clone();
-    }
-
-    void JSONObject::put(const std::string& key, JValue* obj)
-    {
-        this->remove(key);
-        _map[key] = obj;
+        _map[key] = value.clone();
     }
 
     void JSONObject::put(const std::string& key, const JArray& array)

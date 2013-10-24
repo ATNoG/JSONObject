@@ -105,12 +105,146 @@ namespace json
             _array.push_back((*it)->clone());
     }
 
+
+    void JArray::get(const size_t idx, JValue* &value) const
+    {
+        value = _array.at(idx);
+    }
+
+    void JArray::get(const size_t idx, bool &value) const 
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL && _value->isBooleanValue())
+            ((JBoolean*)_value)->value(value);
+    }
+
+    void JArray::get(const size_t idx, double &value) const
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL && _value->isNumberValue())
+            ((JNumber*)_value)->value(value);
+    }
+
+    void JArray::get(const size_t idx, int &value) const
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL && _value->isNumberValue())
+        {
+            double temp = 0.0;
+            ((JNumber*)_value)->value(temp);
+            value = (int) temp;
+        }
+    }
+
+    void JArray::get(const size_t idx, size_t &value) const
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL && _value->isNumberValue())
+        {
+            double temp = 0.0;
+            ((JNumber*)_value)->value(temp);
+            value = (size_t) temp;
+        }
+    }
+
+    void JArray::get(const size_t idx, std::string& value) const
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL && _value->isStringValue())
+            ((JString*)_value)->value(value);
+    }
+
+    
+    void JArray::get(const size_t idx, JArray &value) const
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL && _value->isArrayValue())
+            value = *((JArray*)_value);
+    }
+
+
+    void JArray::put(const size_t idx, JValue* &value)
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL)
+            delete _value;
+
+        _array[idx] = value;
+    }
+    
+    void JArray::put(const size_t idx, const std::string value)
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL)
+            delete _value;
+
+        _array[idx] = new JString(value);
+    }
+    
+    void JArray::put(const size_t idx, const char* value)
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL)
+            delete _value;
+
+        _array[idx] = new JString(value);
+    }
+
+    void JArray::put(const size_t idx, const double value)
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL)
+            delete _value;
+
+        _array[idx] = new JNumber(value);
+    }
+
+    void JArray::put(const size_t idx, const int value)
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL)
+            delete _value;
+
+        _array[idx] = new JNumber(value);
+    }
+
+    void JArray::put(const size_t idx, const bool value)
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL)
+            delete _value;
+
+        _array[idx] = new JBoolean(value);
+    }
+
+    void JArray::put(const size_t idx, const JArray& value)
+    {
+        JValue* _value = _array.at(idx);
+
+        if(_value != NULL)
+            delete _value;
+
+        _array[idx] = value.clone();
+    }
+
     void JArray::put(JValue* value)
     {
         _array.push_back(value);
     }
 
-    JValue* JArray::at(size_t i) const
+    JValue*& JArray::at(size_t i)
     {
         return _array.at(i);
     }
