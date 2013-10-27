@@ -11,8 +11,6 @@
 
 #include "JSONObject.hpp"
 
-#include <iostream>
-
 namespace json
 {
     JBoolean::JBoolean(bool value):JValue(BOOLEAN)

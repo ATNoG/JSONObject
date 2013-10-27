@@ -11,7 +11,6 @@
 
 #include "JSONObject.hpp"
 
-#include <iostream>
 #include <sstream>
 #include <stack>
 
@@ -144,8 +143,6 @@ namespace json
 
     void JSONObject::put(const std::string& key, const bool value)
     {
-        std::cerr<<"Put Boolean"<<std::endl;
-        
         this->remove(key);
         _map[key] = new JBoolean(value);
     }
@@ -204,12 +201,7 @@ namespace json
     {
         std::map<std::string, JValue*>::iterator it = _map.begin();
         for(; it != _map.end(); ++it)
-        {
-            std::cerr<<"Delete: "<<it->first<<std::endl;
-            
             delete it->second;
-            //_map.erase(it->first);
-        }
         _map.clear();
     }
 
@@ -519,15 +511,14 @@ namespace json
                             {
                                 end = idx-1;
                                 JValue *value = factory(str, begin, end);
+
                                 if(value != NULL)
-                                {
                                     arrays.top()->put(value);
-                                    arrays.pop();
-                                    state.pop();
-                                    state.push(COMMA);
-                                }
-                                else
-                                    state.push(ERROR);
+                                
+                                arrays.pop();
+                                state.pop();
+                                state.push(COMMA); 
+                                
                                 break;
                             }
                         case ',':

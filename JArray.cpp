@@ -11,8 +11,6 @@
 
 #include "JSONObject.hpp"
 
-#include <iostream>
-
 namespace json
 {
     JArray::JArray():JValue(ARRAY)

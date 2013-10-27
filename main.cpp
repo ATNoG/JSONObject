@@ -10,8 +10,8 @@
 
 int main(int argc, char *argv[])
 {
-    std::string txt= "{\"keys\":[\"0x000\",\"0x001\",\"0x002\",\"0x003\"],\"type\":\"getall request\"}";
-
+    //std::string txt="{\"keys\":[\"0x000\",\"0x001\",\"0x002\",\"0x003\"],\"type\":\"getall request\"}";
+    std::string txt="{\"keys\":[],\"type\":\"getall request\",\"json\":{}}";
     //std::string txt= "{\"keys\":[\"0x000\",\"0x001\",\"0x002\",\"0x003\"]}";
 
     std::cout<<"TXT:"<<txt<<std::endl;

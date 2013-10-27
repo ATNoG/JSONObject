@@ -3,7 +3,7 @@ project(JSONObject)
 
 find_package(Doxygen)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -ansi -pedantic -O0 -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -ansi -pedantic -O2 -flto -march=native")
 if(NOT LIB_INSTALL_DIR)
     set(LIB_INSTALL_DIR "/lib/")
 endif(NOT LIB_INSTALL_DIR)
